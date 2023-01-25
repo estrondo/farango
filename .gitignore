@@ -1,2 +1,13 @@
 *.class
 *.log
+
+/.bloop/
+/.metals/
+/.vscode/
+/project/metals.sbt
+/project/project/
+/project/.bloop/
+/project/target/
+/target/
+/farango/target/
+/zarango/target/
