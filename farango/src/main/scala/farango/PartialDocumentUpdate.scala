@@ -11,7 +11,7 @@ class PartialDocumentUpdate[U, T](collection: DocumentCollection):
   ): F[Option[O]] =
     val convertingEffect = summon[EffectConversion[I, U, F]](document)
     val updatingEffect   = Effect[F]
-      .flatMap(convertingEffect)(toUpdate => collection.update[U, T, F](key, toUpdate, updateReturn))
+      .flatMap(convertingEffect)(toUpdate => collection.updateT[U, T, F](key, toUpdate, updateReturn))
 
     Effect[F]
       .flatMap(updatingEffect)({

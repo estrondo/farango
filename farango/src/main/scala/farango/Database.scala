@@ -8,12 +8,12 @@ import scala.reflect.ClassTag
 
 trait Database:
 
-  def query[T: ClassTag, F[_]: Effect, S[_]](
+  def queryT[T: ClassTag, F[_]: Effect, S[_]](
       query: String,
       parameters: Map[String, Any] = Map.empty
   )(using EffectStream[S, F]): F[S[T]]
 
-  def queryT[T]: PartialDatabaseQuery[T] = PartialDatabaseQuery(this)
+  def query[T]: PartialDatabaseQuery[T] = PartialDatabaseQuery(this)
 
   def documentCollection[F[_]: Effect](name: String): F[DocumentCollection]
 
@@ -33,7 +33,7 @@ private[farango] class FarangoDatabaseImpl(override private[farango] val underly
   override def documentCollection[F[_]: Effect](name: String): F[DocumentCollection] =
     DocumentCollection(name, this)
 
-  def query[T: ClassTag, F[_]: Effect, S[_]](
+  def queryT[T: ClassTag, F[_]: Effect, S[_]](
       query: String,
       parameters: Map[String, Any] = Map.empty
   )(using EffectStream[S, F]): F[S[T]] =

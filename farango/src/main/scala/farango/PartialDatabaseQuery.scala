@@ -9,6 +9,6 @@ class PartialDatabaseQuery[T](database: Database):
       EffectConversion[T, O, F],
       EffectStream[S, F]
   ): F[S[O]] =
-    val streamingEffect = database.query[T, F, S](query, parameters)
+    val streamingEffect = database.queryT[T, F, S](query, parameters)
     Effect[F]
       .map(streamingEffect)(stream => EffectStream[S, F].effectMap(stream)(summon[EffectConversion[T, O, F]].apply))

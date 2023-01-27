@@ -18,31 +18,33 @@ import java.util.Collections
 
 trait DocumentCollection:
 
-  def all[T: ClassTag, S[_]](using EffectStream[S, _]): S[T]
-
   def database: Database
 
   def name: String
 
-  def get[T: ClassTag, F[_]: Effect](key: String): F[Option[T]]
+  def documentsT[T: ClassTag, S[_]](using EffectStream[S, _]): S[T]
 
-  def getT[T]: PartialDocumentGet[T] = PartialDocumentGet(this)
+  def documents[T]: PartialDocumentDocuments[T] = new PartialDocumentDocuments(this)
 
-  def insert[T: ClassTag, F[_]: Effect](document: T): F[T]
+  def getT[T: ClassTag, F[_]: Effect](key: String): F[Option[T]]
 
-  def insertT[T]: PartialDocumentInsert[T] = PartialDocumentInsert(this)
+  def get[T]: PartialDocumentGet[T] = PartialDocumentGet(this)
 
-  def remove[T: ClassTag, F[_]: Effect](key: String): F[Option[T]]
+  def insertT[T: ClassTag, F[_]: Effect](document: T): F[T]
 
-  def removeT[T, O]: PartialDocumentRemove[T] = PartialDocumentRemove(this)
+  def insert[T]: PartialDocumentInsert[T] = PartialDocumentInsert(this)
 
-  def update[U, T: ClassTag, F[_]: Effect](
+  def removeT[T: ClassTag, F[_]: Effect](key: String): F[Option[T]]
+
+  def remove[T]: PartialDocumentRemove[T] = PartialDocumentRemove(this)
+
+  def updateT[U, T: ClassTag, F[_]: Effect](
       key: String,
       document: U,
       updateReturn: UpdateReturn = UpdateReturn.None
   ): F[Option[T]]
 
-  def updateT[U, T]: PartialDocumentUpdate[U, T] = PartialDocumentUpdate(this)
+  def update[U, T]: PartialDocumentUpdate[U, T] = PartialDocumentUpdate(this)
 
 object DocumentCollection:
 
@@ -71,10 +73,10 @@ private[farango] class DocumentCollectionImpl(
 
   override def name: String = collection.name()
 
-  override def get[T: ClassTag, F[_]: Effect](key: String): F[Option[T]] =
+  override def getT[T: ClassTag, F[_]: Effect](key: String): F[Option[T]] =
     Effect[F].mapFromCompletionStage(collection.getDocument(key, expectedType[T]))(Option(_))
 
-  override def insert[T: ClassTag, F[_]: Effect](document: T): F[T] =
+  override def insertT[T: ClassTag, F[_]: Effect](document: T): F[T] =
     val options = DocumentCreateOptions()
       .returnNew(true)
 
@@ -82,7 +84,7 @@ private[farango] class DocumentCollectionImpl(
       entity.getNew()
     }
 
-  override def all[T: ClassTag, S[_]](using effect: EffectStream[S, _]): S[T] =
+  override def documentsT[T: ClassTag, S[_]](using effect: EffectStream[S, _]): S[T] =
     val completionStage = database.underlying
       .query(
         "FOR e IN @@collection RETURN e",
@@ -93,7 +95,7 @@ private[farango] class DocumentCollectionImpl(
 
     effect.mapFromCompletionStage(completionStage)(identity)
 
-  override def remove[T: ClassTag, F[_]: Effect](key: String): F[Option[T]] =
+  override def removeT[T: ClassTag, F[_]: Effect](key: String): F[Option[T]] =
     val options = DocumentDeleteOptions()
       .returnOld(true)
 
@@ -103,7 +105,7 @@ private[farango] class DocumentCollectionImpl(
 
     Effect[F].mapFromCompletionStage(completionStage)(entity => Option(entity.getOld()))
 
-  override def update[U, T: ClassTag, F[_]: Effect](
+  override def updateT[U, T: ClassTag, F[_]: Effect](
       key: String,
       document: U,
       updateReturn: UpdateReturn = UpdateReturn.None
