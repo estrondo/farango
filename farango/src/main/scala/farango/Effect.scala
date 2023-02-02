@@ -9,6 +9,8 @@ object Effect:
 
 trait Effect[F[_]]:
 
+  def handleErrorWith[A](a: F[A])(fn: Throwable => F[A]): F[A]
+
   def map[A, B](a: F[A])(fn: A => B): F[B]
 
   def mapFromCompletionStage[A, B](a: => CompletionStage[A])(fn: A => B): F[B]
@@ -18,5 +20,7 @@ trait Effect[F[_]]:
   def flatMapFromCompletionStage[A, B](a: => CompletionStage[A])(fn: A => F[B]): F[B]
 
   def succeed[A](a: => A): F[A]
+
+  def failed[A](cause: Throwable): F[A]
 
   def none[A]: F[Option[A]]

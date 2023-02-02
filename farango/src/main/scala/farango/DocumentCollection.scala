@@ -10,11 +10,11 @@ import com.arangodb.model.DocumentCreateOptions
 import com.arangodb.model.DocumentDeleteOptions
 import com.arangodb.model.DocumentUpdateOptions
 
+import java.util.Collections
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.CompletionStage
 import scala.reflect.ClassTag
-import java.util.Collections
 
 trait DocumentCollection:
 
@@ -61,7 +61,7 @@ object DocumentCollection:
 
     Effect[F].mapFromCompletionStage(response)(_ => DocumentCollectionImpl(database, collection))
 
-  private def create(collection: ArangoCollectionAsync): CompletableFuture[Unit] =
+  private[farango] def create(collection: ArangoCollectionAsync): CompletableFuture[Unit] =
     val options = CollectionCreateOptions()
       .waitForSync(true)
     collection.create(options).thenApply(_ => ())
@@ -80,9 +80,9 @@ private[farango] class DocumentCollectionImpl(
     val options = DocumentCreateOptions()
       .returnNew(true)
 
-    Effect[F].mapFromCompletionStage(collection.insertDocument(document, options)) { entity =>
+    handle(Effect[F].mapFromCompletionStage(collection.insertDocument(document, options)) { entity =>
       entity.getNew()
-    }
+    })
 
   override def documentsT[T: ClassTag, S[_]](using effect: EffectStream[S, _]): S[T] =
     val completionStage = database.underlying
@@ -103,7 +103,7 @@ private[farango] class DocumentCollectionImpl(
       .deleteDocument(key, expectedType, options)
       .exceptionallyCompose(alternativeEntity(DocumentDeleteEntity()))
 
-    Effect[F].mapFromCompletionStage(completionStage)(entity => Option(entity.getOld()))
+    handle(Effect[F].mapFromCompletionStage(completionStage)(entity => Option(entity.getOld())))
 
   override def updateT[U, T: ClassTag, F[_]: Effect](
       key: String,
@@ -116,7 +116,18 @@ private[farango] class DocumentCollectionImpl(
       .updateDocument(key, document, options, expectedType[T])
       .exceptionallyCompose(alternativeEntity(DocumentUpdateEntity()))
 
-    Effect[F].mapFromCompletionStage(completionStage)(entity => updateReturn(entity))
+    handle(Effect[F].mapFromCompletionStage(completionStage)(entity => updateReturn(entity)))
+
+  // https://www.arangodb.com/docs/3.10/appendix-error-codes.html
+
+  private def handle[T, F[_]: Effect](effect: F[T]): F[T] =
+    Effect[F].handleErrorWith(effect) {
+      case cause: ArangoDBException if cause.getErrorNum() == 1203 =>
+        tryRecreateCollection(effect)
+
+      case other: Throwable =>
+        Effect[F].failed(other)
+    }
 
   private inline def expectedType[T](using tag: ClassTag[T]): Class[T] =
     tag.runtimeClass.asInstanceOf[Class[T]]
@@ -130,3 +141,7 @@ private[farango] class DocumentCollectionImpl(
         CompletableFuture.completedFuture(entity)
 
       case _ => CompletableFuture.failedStage(throwable)
+
+  private def tryRecreateCollection[T, F[_]: Effect](effect: F[T]): F[T] =
+    Effect[F]
+      .flatMapFromCompletionStage(DocumentCollection.create(collection))(_ => effect)
