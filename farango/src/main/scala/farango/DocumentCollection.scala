@@ -5,15 +5,18 @@ import com.arangodb.async.ArangoCollectionAsync
 import com.arangodb.async.ArangoDatabaseAsync
 import com.arangodb.entity.DocumentDeleteEntity
 import com.arangodb.entity.DocumentUpdateEntity
+import com.arangodb.entity.IndexEntity
 import com.arangodb.model.CollectionCreateOptions
 import com.arangodb.model.DocumentCreateOptions
 import com.arangodb.model.DocumentDeleteOptions
 import com.arangodb.model.DocumentUpdateOptions
+import com.arangodb.model.GeoIndexOptions
 
 import java.util.Collections
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.CompletionStage
+import scala.jdk.CollectionConverters.IterableHasAsJava
 import scala.reflect.ClassTag
 
 trait DocumentCollection:
@@ -21,6 +24,8 @@ trait DocumentCollection:
   def database: Database
 
   def name: String
+
+  def ensureGeoIndex[F[_]: Effect](fields: Iterable[String], options: GeoIndexOptions): F[IndexEntity]
 
   def documentsT[T: ClassTag, S[_]](using EffectStream[S, _]): S[T]
 
@@ -72,6 +77,9 @@ private[farango] class DocumentCollectionImpl(
 ) extends DocumentCollection:
 
   override def name: String = collection.name()
+
+  override def ensureGeoIndex[F[_]: Effect](fields: Iterable[String], options: GeoIndexOptions): F[IndexEntity] =
+    Effect[F].mapFromCompletionStage(collection.ensureGeoIndex(fields.asJava, options))(identity)
 
   override def getT[T: ClassTag, F[_]: Effect](key: String): F[Option[T]] =
     Effect[F].mapFromCompletionStage(collection.getDocument(key, expectedType[T]))(Option(_))
