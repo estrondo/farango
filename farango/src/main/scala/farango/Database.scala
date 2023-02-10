@@ -5,6 +5,7 @@ import com.arangodb.async.ArangoDatabaseAsync
 
 import scala.jdk.CollectionConverters.MapHasAsJava
 import scala.reflect.ClassTag
+import java.util.concurrent.CompletableFuture
 
 trait Database:
 
@@ -21,11 +22,18 @@ trait Database:
 
 object Database:
 
-  def apply(server: ArangoDBAsync, name: String): Database =
+  def apply[F[_]: Effect](server: ArangoDBAsync, name: String): F[Database] =
     apply(server.db(name))
 
-  def apply(database: ArangoDatabaseAsync): Database =
-    FarangoDatabaseImpl(database)
+  def apply[F[_]: Effect](database: ArangoDatabaseAsync): F[Database] =
+    val creation = database
+      .exists()
+      .thenComposeAsync({ exists =>
+        if exists then CompletableFuture.completedStage(java.lang.Boolean.TRUE)
+        else database.create()
+      })
+
+    Effect[F].mapFromCompletionStage(creation)(_ => FarangoDatabaseImpl(database))
 
 private[farango] class FarangoDatabaseImpl(override private[farango] val underlying: ArangoDatabaseAsync)
     extends Database:
