@@ -4,6 +4,8 @@
 /.bloop/
 /.metals/
 /.vscode/
+/.idea/
+/.bsp/
 /project/metals.sbt
 /project/project/
 /project/.bloop/
