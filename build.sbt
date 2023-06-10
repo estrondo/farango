@@ -12,8 +12,55 @@ ThisBuild / scalacOptions ++= Seq(
 
 lazy val root = (project in file("."))
   .settings(
+    name := "farango-root"
+  )
+  .aggregate(
+    core,
+    zio,
+    it,
+    zioIt
+  )
+
+lazy val core = (project in file("core"))
+  .settings(
     name := "farango",
     libraryDependencies ++= Seq(
-      Dependencies.ArangoDBDriver
+      Dependencies.ArangoDBDriver,
+      Dependencies.ScalaTest,
+      Dependencies.ScalatestMockito
     ).flatten
+  )
+
+lazy val it = (project in file("it"))
+  .settings(
+    name := "farango-it-test",
+    libraryDependencies ++= Seq(
+      Dependencies.TestcontainersScala,
+      Dependencies.Logging
+    ).flatten
+  )
+  .dependsOn(
+    core % "test->test"
+  )
+
+lazy val zio = (project in file("zio"))
+  .settings(
+    name := "farango-zio",
+    libraryDependencies ++= Seq(
+      Dependencies.ZIO
+    ).flatten
+  )
+  .dependsOn(
+    core,
+    core % "test->test"
+  )
+
+lazy val zioIt = (project in file("zio-it"))
+  .settings(
+    name := "farango-zio-it"
+  )
+  .dependsOn(
+    zio,
+    zio % "test->test",
+    it  % "test->test"
   )

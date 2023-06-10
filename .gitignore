@@ -11,5 +11,8 @@
 /project/.bloop/
 /project/target/
 /target/
-/farango/target/
-/zarango/target/
+
+/core/target/
+/it/target/
+/zio/target/
+/zio-it/target/
