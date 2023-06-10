@@ -35,7 +35,7 @@ object Database:
         name: String,
         options: Option[CollectionCreateOptions] = None,
         indexes: Seq[IndexEnsurer] = Nil
-    ): F[Collection] = Collection(this, name, options, indexes)
+    ): F[Collection] = Collection(this, name, options)(indexes*)
 
     override def create[F[_]: Effect](): F[Database] = Effect[F].attemptBlocking {
       if arango.exists() then this

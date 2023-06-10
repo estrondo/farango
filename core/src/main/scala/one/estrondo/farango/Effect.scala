@@ -31,6 +31,12 @@ trait Effect[F[_]]:
 
   def map[A, B](a: F[A])(f: A => B): F[B]
 
+  def mapOption[A, B](a: F[Option[A]])(f: A => F[B]): F[Option[B]] =
+    flatMap(a) {
+      case Some(value) => map(f(value))(Option.apply)
+      case None        => succeed(None)
+    }
+
   def succeed[A](value: => A): F[A]
 
 object Effect:

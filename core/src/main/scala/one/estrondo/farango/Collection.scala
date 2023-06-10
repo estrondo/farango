@@ -4,12 +4,16 @@ import com.arangodb.ArangoCollection
 import com.arangodb.entity.IndexEntity
 import com.arangodb.entity.InvertedIndexEntity
 import com.arangodb.model.CollectionCreateOptions
+import one.estrondo.farango.collection.PartiallyAppliedGetDocument
+import scala.reflect.ClassTag
 
 trait Collection:
 
   def arango: ArangoCollection
 
   def name: String
+
+  def getDocument[S: ClassTag]: PartiallyAppliedGetDocument[S] = PartiallyAppliedGetDocument(arango)
 
 object Collection:
 

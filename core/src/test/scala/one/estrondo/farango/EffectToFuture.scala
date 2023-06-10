@@ -17,3 +17,7 @@ given EffectToFuture[[X] =>> Either[Throwable, X]] with
 
   override def toFuture(a: Either[Throwable, Assertion]): Future[Assertion] =
     Future.fromTry(a.toTry)
+
+given EffectToFuture[[X] =>> Future[X]] with
+
+  override def toFuture(a: Future[Assertion]): Future[Assertion] = a

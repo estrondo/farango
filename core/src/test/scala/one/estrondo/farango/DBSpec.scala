@@ -3,6 +3,9 @@ package one.estrondo.farango
 import com.arangodb.ArangoDatabase
 import com.arangodb.ArangoDB
 import com.arangodb.model.DBCreateOptions
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.language.implicitConversions
 import scala.util.Try
 
 abstract class DBSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[F]:
@@ -41,3 +44,5 @@ abstract class DBSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[F]:
 class DBSpecWithTry extends DBSpec[Try]
 
 class DBSpecWithEither extends DBSpec[[X] =>> Either[Throwable, X]]
+
+class DBSpecWithFuture extends DBSpec[[X] =>> Future[X]]
