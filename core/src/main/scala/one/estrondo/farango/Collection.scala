@@ -9,20 +9,21 @@ trait Collection:
 
   def arango: ArangoCollection
 
+  def name: String
+
 object Collection:
 
   def apply[F[_]: Effect](
       database: Database,
       name: String,
-      options: Option[CollectionCreateOptions] = None,
-      indexes: Seq[IndexEnsurer] = Nil
-  ): F[Collection] =
+      options: Option[CollectionCreateOptions] = None
+  )(indexes: IndexEnsurer*): F[Collection] =
     Impl(database, name, options, indexes).create()
   private class Impl(
       database: Database,
-      name: String,
-      options: Option[CollectionCreateOptions] = None,
-      indexes: Seq[IndexEnsurer] = Nil
+      val name: String,
+      options: Option[CollectionCreateOptions],
+      indexes: Seq[IndexEnsurer]
   ) extends Collection:
 
     val arango = database.arango.collection(name)
