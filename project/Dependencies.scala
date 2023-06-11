@@ -10,6 +10,10 @@ object Dependencies {
     "org.slf4j" % "slf4j-reload4j" % Version.Reload4j
   )
 
+  val JacksonScalaModule = Seq(
+    "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % "2.15.2"
+  )
+
   val ScalaTest = Seq(
     "org.scalatest" %% "scalatest" % Version.ScalaTest % Test
   )

@@ -37,7 +37,8 @@ lazy val it = (project in file("it"))
     name := "farango-it-test",
     libraryDependencies ++= Seq(
       Dependencies.TestcontainersScala,
-      Dependencies.Logging
+      Dependencies.Logging,
+      Dependencies.JacksonScalaModule
     ).flatten
   )
   .dependsOn(

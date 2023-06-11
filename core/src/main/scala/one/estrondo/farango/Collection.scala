@@ -5,7 +5,7 @@ import com.arangodb.entity.IndexEntity
 import com.arangodb.entity.InvertedIndexEntity
 import com.arangodb.model.CollectionCreateOptions
 import one.estrondo.farango.collection.PartiallyAppliedGetDocument
-import scala.reflect.ClassTag
+import one.estrondo.farango.collection.PartiallyAppliedInsertDocument
 
 trait Collection:
 
@@ -13,7 +13,10 @@ trait Collection:
 
   def name: String
 
-  def getDocument[S: ClassTag]: PartiallyAppliedGetDocument[S] = PartiallyAppliedGetDocument(arango)
+  def getDocument[S]: PartiallyAppliedGetDocument[S] = PartiallyAppliedGetDocument(arango)
+
+  // noinspection MutatorLikeMethodIsParameterless
+  def insertDocument[S]: PartiallyAppliedInsertDocument[S] = PartiallyAppliedInsertDocument(arango)
 
 object Collection:
 

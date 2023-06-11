@@ -3,8 +3,10 @@ package one.estrondo.farango
 import com.arangodb.ArangoCollection
 import com.arangodb.ArangoDatabase
 import com.arangodb.entity.CollectionEntity
+import com.arangodb.entity.DocumentCreateEntity
 import com.arangodb.entity.IndexEntity
 import com.arangodb.model.CollectionCreateOptions
+import com.arangodb.model.DocumentCreateOptions
 import com.arangodb.model.DocumentReadOptions
 import org.mockito.Mockito
 import org.scalatest.matchers.HavePropertyMatcher
@@ -29,7 +31,9 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
     when(arangoCollection.create(any[CollectionCreateOptions]))
       .thenReturn(CollectionEntity())
 
-    MockContext(database, arangoDatabase, arangoCollection)
+    val collection = Collection(database, "test-collection")()
+
+    MockContext(database, arangoDatabase, arangoCollection, collection)
 
   case class StoredDocument(_key: String, name: String)
 
@@ -38,13 +42,18 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
   protected class MockContext(
       val database: Database,
       val arangoDatabase: ArangoDatabase,
-      val arangoCollection: ArangoCollection
+      val arangoCollection: ArangoCollection,
+      val getCollection: F[Collection]
   )
 
   given Transformer[StoredDocument, UserDocument] with
 
     override def apply[F[_]: Effect](a: StoredDocument): F[UserDocument] =
       Effect[F].succeed(UserDocument(a._key, a.name))
+
+  given Transformer[UserDocument, StoredDocument] with
+    override def apply[F[_]: Effect](a: UserDocument): F[StoredDocument] =
+      Effect[F].succeed(StoredDocument(a._key, a.name))
 
   "A Collection" - {
 
@@ -129,6 +138,31 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
         collection <- Collection(database, "test-collection")()
         result     <- collection.getDocument[StoredDocument].apply("key")
       yield result should contain(expectedUserDocument)
+    }
+
+    "It should insert a document." in {
+      val mockContext = createMockContext()
+      import mockContext.*
+
+      val toInsert = UserDocument("42", "Galileo")
+      val toStore  = StoredDocument("42", "Galileo")
+
+      val entity = DocumentCreateEntity[StoredDocument]()
+      entity.setNew(toStore)
+
+      when(
+        arangoCollection.insertDocument(
+          eqTo(StoredDocument("42", "Galileo")),
+          any[DocumentCreateOptions],
+          eqTo(classOf[StoredDocument])
+        )
+      )
+        .thenReturn(entity)
+
+      for
+        collection <- getCollection
+        result     <- collection.insertDocument[StoredDocument](toInsert, DocumentCreateOptions().waitForSync(true))
+      yield result.getNew should be(toStore)
     }
   }
 
