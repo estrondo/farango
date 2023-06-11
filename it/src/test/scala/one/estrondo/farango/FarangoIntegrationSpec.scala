@@ -1,11 +1,8 @@
 package one.estrondo.farango
 
 import com.arangodb.ArangoDB
-import com.arangodb.ContentType
-import com.arangodb.serde.jackson.JacksonSerde
 import com.dimafeng.testcontainers.GenericContainer
 import com.dimafeng.testcontainers.scalatest.TestContainerForEach
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.scalatest.Assertion
 import org.testcontainers.containers.wait.strategy.Wait
 import scala.concurrent.Future
@@ -23,13 +20,11 @@ abstract class FarangoIntegrationSpec[F[_]: Effect: EffectToFuture] extends Fara
 
   def withDB(block: ArangoDB => Future[Assertion]): Future[Assertion] =
     withContainers { container =>
-      val db = ArangoDB
-        .Builder()
-        .host(container.host, container.mappedPort(8529))
-        .user("root")
-        .password("farango")
-        .serde(JacksonSerde.of(ContentType.JSON).configure(mapper => mapper.registerModule(DefaultScalaModule)))
-        .build()
-
-      block(db)
+      block(
+        builder()
+          .host(container.host, container.mappedPort(8529))
+          .user("root")
+          .password("farango")
+          .build()
+      )
     }

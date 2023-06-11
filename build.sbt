@@ -27,6 +27,7 @@ lazy val core = (project in file("core"))
     name := "farango",
     libraryDependencies ++= Seq(
       Dependencies.ArangoDBDriver,
+      Dependencies.JacksonScalaModule,
       Dependencies.ScalaTest,
       Dependencies.ScalatestMockito
     ).flatten
