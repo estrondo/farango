@@ -6,6 +6,7 @@ import com.arangodb.entity.InvertedIndexEntity
 import com.arangodb.model.CollectionCreateOptions
 import one.estrondo.farango.collection.PartiallyAppliedGetDocument
 import one.estrondo.farango.collection.PartiallyAppliedInsertDocument
+import one.estrondo.farango.collection.PartiallyAppliedUpdateDocument
 
 trait Collection:
 
@@ -13,10 +14,21 @@ trait Collection:
 
   def name: String
 
+  /** @tparam S
+    *   The Stored Document's type.
+    */
   def getDocument[S]: PartiallyAppliedGetDocument[S] = PartiallyAppliedGetDocument(arango)
 
   // noinspection MutatorLikeMethodIsParameterless
+  /** @tparam S The Stored Document's type. */
   def insertDocument[S]: PartiallyAppliedInsertDocument[S] = PartiallyAppliedInsertDocument(arango)
+
+  /** @tparam S
+    *   The Stored Document's type.
+    * @tparam U
+    *   The type which is used to update the document in collection.
+    */
+  def updateDocument[S, U]: PartiallyAppliedUpdateDocument[S, U] = PartiallyAppliedUpdateDocument(arango)
 
 object Collection:
 

@@ -4,10 +4,12 @@ import com.arangodb.ArangoCollection
 import com.arangodb.ArangoDatabase
 import com.arangodb.entity.CollectionEntity
 import com.arangodb.entity.DocumentCreateEntity
+import com.arangodb.entity.DocumentUpdateEntity
 import com.arangodb.entity.IndexEntity
 import com.arangodb.model.CollectionCreateOptions
 import com.arangodb.model.DocumentCreateOptions
 import com.arangodb.model.DocumentReadOptions
+import com.arangodb.model.DocumentUpdateOptions
 import org.mockito.Mockito
 import org.scalatest.matchers.HavePropertyMatcher
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,6 +41,8 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
 
   case class UserDocument(_key: String, name: String)
 
+  case class UpdateDocument(name: String, email: String)
+
   protected class MockContext(
       val database: Database,
       val arangoDatabase: ArangoDatabase,
@@ -54,6 +58,10 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
   given Transformer[UserDocument, StoredDocument] with
     override def apply[F[_]: Effect](a: UserDocument): F[StoredDocument] =
       Effect[F].succeed(StoredDocument(a._key, a.name))
+
+  given Transformer[UserDocument, UpdateDocument] with
+    override def apply[F[_]: Effect](a: UserDocument): F[UpdateDocument] =
+      Effect[F].succeed(UpdateDocument(a.name, email = null.asInstanceOf[String]))
 
   "A Collection" - {
 
@@ -163,6 +171,33 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
         collection <- getCollection
         result     <- collection.insertDocument[StoredDocument](toInsert, DocumentCreateOptions().waitForSync(true))
       yield result.getNew should be(toStore)
+    }
+
+    "It should update a document." in {
+      val context = createMockContext()
+      import context.*
+
+      val userInput        = UserDocument(_key = "99", name = "Ronaldo")
+      val toUpdate         = UpdateDocument(name = "Ronaldo", email = null)
+      val expectedDocument = StoredDocument("77", "Aka aka")
+      val entity           = DocumentUpdateEntity[StoredDocument]()
+
+      entity.setNew(expectedDocument)
+
+      when(
+        arangoCollection.updateDocument(
+          eqTo("99"),
+          eqTo(toUpdate),
+          any[DocumentUpdateOptions],
+          eqTo(classOf[StoredDocument])
+        )
+      )
+        .thenReturn(entity)
+
+      for
+        collection <- getCollection
+        entity     <- collection.updateDocument[StoredDocument, UpdateDocument]("99", userInput)
+      yield entity.getNew should be(expectedDocument)
     }
   }
 
