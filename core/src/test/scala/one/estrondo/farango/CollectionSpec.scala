@@ -4,10 +4,12 @@ import com.arangodb.ArangoCollection
 import com.arangodb.ArangoDatabase
 import com.arangodb.entity.CollectionEntity
 import com.arangodb.entity.DocumentCreateEntity
+import com.arangodb.entity.DocumentDeleteEntity
 import com.arangodb.entity.DocumentUpdateEntity
 import com.arangodb.entity.IndexEntity
 import com.arangodb.model.CollectionCreateOptions
 import com.arangodb.model.DocumentCreateOptions
+import com.arangodb.model.DocumentDeleteOptions
 import com.arangodb.model.DocumentReadOptions
 import com.arangodb.model.DocumentUpdateOptions
 import org.mockito.Mockito
@@ -198,6 +200,29 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
         collection <- getCollection
         entity     <- collection.updateDocument[StoredDocument, UpdateDocument]("99", userInput)
       yield entity.getNew should be(expectedDocument)
+    }
+
+    "It should remove a document." in {
+      val context = createMockContext()
+      import context.*
+
+      val expectedOldDocument = StoredDocument("852", "Leila")
+      val entity              = DocumentDeleteEntity[StoredDocument]()
+
+      entity.setOld(expectedOldDocument)
+
+      when(
+        arangoCollection.deleteDocument(eqTo("852"), any[DocumentDeleteOptions], eqTo(classOf[StoredDocument]))
+      ).thenReturn(entity)
+
+      for
+        collection <- getCollection
+        result     <- collection.deleteDocument[StoredDocument]("852")
+      yield
+        val (entity, oldDocument) = result
+        entity.getOld should be(expectedOldDocument)
+        oldDocument should contain(UserDocument("852", "Leila"))
+
     }
   }
 

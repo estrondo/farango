@@ -4,6 +4,7 @@ import com.arangodb.ArangoCollection
 import com.arangodb.entity.IndexEntity
 import com.arangodb.entity.InvertedIndexEntity
 import com.arangodb.model.CollectionCreateOptions
+import one.estrondo.farango.collection.PartiallyAppliedDeleteDocument
 import one.estrondo.farango.collection.PartiallyAppliedGetDocument
 import one.estrondo.farango.collection.PartiallyAppliedInsertDocument
 import one.estrondo.farango.collection.PartiallyAppliedUpdateDocument
@@ -13,6 +14,9 @@ trait Collection:
   def arango: ArangoCollection
 
   def name: String
+
+  // noinspection MutatorLikeMethodIsParameterless
+  def deleteDocument[S]: PartiallyAppliedDeleteDocument[S] = PartiallyAppliedDeleteDocument(arango)
 
   /** @tparam S
     *   The Stored Document's type.

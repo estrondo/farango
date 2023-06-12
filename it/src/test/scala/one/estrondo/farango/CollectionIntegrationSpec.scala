@@ -2,6 +2,7 @@ package one.estrondo.farango
 
 import com.arangodb.model.CollectionCreateOptions
 import com.arangodb.model.DocumentCreateOptions
+import com.arangodb.model.DocumentDeleteOptions
 import com.arangodb.model.DocumentUpdateOptions
 import one.estrondo.farango.CollectionIntegrationSpec.StoredDocument
 import one.estrondo.farango.CollectionIntegrationSpec.UpdateDocument
@@ -65,6 +66,21 @@ abstract class CollectionIntegrationSpec[F[_]: Effect: EffectToFuture] extends F
         entity.getNew should be(StoredDocument(_key = "33", name = "Flor Angela"))
         entity.getOld should be(StoredDocument(_key = "33", name = "Angela"))
         updated should contain(StoredDocument(_key = "33", name = "Flor Angela"))
+    }
+
+    "It should delete a document." in withCollection { collection =>
+      val storedDocument = UserDocument("33", "Angela")
+
+      for
+        _        <- collection.insertDocument[StoredDocument](storedDocument, DocumentCreateOptions().waitForSync(true))
+        result   <-
+          collection.deleteDocument[StoredDocument]("33", DocumentDeleteOptions().waitForSync(true).returnOld(true))
+        notFound <- collection.getDocument[StoredDocument]("33")
+      yield
+        val (entity, oldDocument) = result
+        entity.getOld should be(StoredDocument("33", "Angela"))
+        oldDocument should contain(storedDocument)
+        notFound shouldBe empty
     }
   }
 
