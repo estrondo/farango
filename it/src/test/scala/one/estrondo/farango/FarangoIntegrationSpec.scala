@@ -10,11 +10,8 @@ import scala.concurrent.Future
 abstract class FarangoIntegrationSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[F], TestContainerForEach:
 
   override val containerDef: GenericContainer.Def[GenericContainer] = GenericContainer.Def(
-    "docker.io/library/arangodb:3.9.11",
+    "docker.io/rthoth/estrondo:arangodb_test_3.11.0",
     exposedPorts = Seq(8529),
-    env = Map(
-      "ARANGO_ROOT_PASSWORD" -> "farango"
-    ),
     waitStrategy = Wait.forLogMessage(""".*Have fun.*""", 1)
   )
 
