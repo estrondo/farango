@@ -217,11 +217,8 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
 
       for
         collection <- getCollection
-        result     <- collection.deleteDocument[StoredDocument]("852")
-      yield
-        val (entity, oldDocument) = result
-        entity.getOld should be(expectedOldDocument)
-        oldDocument should contain(UserDocument("852", "Leila"))
+        entity     <- collection.deleteDocument[StoredDocument]("852")
+      yield entity.getOld should be(StoredDocument("852", "Leila"))
 
     }
   }

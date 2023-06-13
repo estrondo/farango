@@ -73,13 +73,11 @@ abstract class CollectionIntegrationSpec[F[_]: Effect: EffectToFuture] extends F
 
       for
         _        <- collection.insertDocument[StoredDocument](storedDocument, DocumentCreateOptions().waitForSync(true))
-        result   <-
+        entity   <-
           collection.deleteDocument[StoredDocument]("33", DocumentDeleteOptions().waitForSync(true).returnOld(true))
         notFound <- collection.getDocument[StoredDocument]("33")
       yield
-        val (entity, oldDocument) = result
         entity.getOld should be(StoredDocument("33", "Angela"))
-        oldDocument should contain(storedDocument)
         notFound shouldBe empty
     }
   }

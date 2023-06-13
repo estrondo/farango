@@ -2,9 +2,9 @@ package one.estrondo.farango.zio
 
 import one.estrondo.farango.EffectToFuture
 import org.scalatest.Assertion
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import zio.*
-import scala.concurrent.ExecutionContext.Implicits.global
 
 //noinspection ScalaFileName
 given EffectToFuture[[X] =>> Task[X]] with
