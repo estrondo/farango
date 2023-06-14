@@ -4,7 +4,7 @@ import com.arangodb.ArangoCollection
 import com.arangodb.entity.DocumentDeleteEntity
 import com.arangodb.model.DocumentDeleteOptions
 import one.estrondo.farango.Effect
-import one.estrondo.farango.map
+import one.estrondo.farango.EffectOps.map
 import scala.reflect.ClassTag
 
 class PartiallyAppliedDeleteDocument[S](arango: ArangoCollection):

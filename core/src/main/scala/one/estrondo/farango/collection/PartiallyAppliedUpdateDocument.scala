@@ -4,9 +4,9 @@ import com.arangodb.ArangoCollection
 import com.arangodb.entity.DocumentUpdateEntity
 import com.arangodb.model.DocumentUpdateOptions
 import one.estrondo.farango.Effect
+import one.estrondo.farango.EffectOps.flatMap
+import one.estrondo.farango.EffectOps.map
 import one.estrondo.farango.Transformer
-import one.estrondo.farango.flatMap
-import one.estrondo.farango.map
 import scala.reflect.ClassTag
 
 class PartiallyAppliedUpdateDocument[S, U](arango: ArangoCollection):

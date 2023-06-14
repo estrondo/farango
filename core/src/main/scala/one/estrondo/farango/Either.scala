@@ -1,5 +1,10 @@
 package one.estrondo.farango
 
+import java.util.stream
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
+
 //noinspection ScalaFileName
 given Effect[[X] =>> Either[Throwable, X]] with
 
@@ -21,3 +26,18 @@ given Effect[[X] =>> Either[Throwable, X]] with
 
   override def map[A, B](a: Either[Throwable, A])(f: A => B): Either[Throwable, B] =
     a.map(f)
+
+given [I[_] <: Iterable[_]](using other: StreamEffect[I, Try]): StreamEffect[I, [X] =>> Either[Throwable, X]] with
+
+  override def fromEffect[A](a: => Either[Throwable, stream.Stream[A]]): I[A] =
+    other.fromEffect(a match
+      case Right(value) => Success(value)
+      case Left(cause)  => Failure(cause)
+    )
+
+  override def mapEffect[A, B](a: I[A])(f: A => Either[Throwable, B]): I[B] =
+    other.mapEffect(a)(va => {
+      f(va) match
+        case Right(value) => Success(value)
+        case Left(cause)  => Failure(cause)
+    })

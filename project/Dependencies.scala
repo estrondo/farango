@@ -27,7 +27,8 @@ object Dependencies {
   )
 
   val ZIO = Seq(
-    "dev.zio" %% "zio" % Version.ZIO
+    "dev.zio" %% "zio"         % Version.ZIO,
+    "dev.zio" %% "zio-streams" % Version.ZIO
   )
 
   object Version {

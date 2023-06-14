@@ -42,10 +42,11 @@ trait Effect[F[_]]:
 object Effect:
   inline def apply[F[_]](using inline effect: Effect[F]): Effect[F] = effect
 
-extension [A, F[_]: Effect](a: F[A])
+object EffectOps:
+  extension [A, F[_]: Effect](a: F[A])
 
-  def map[B](f: A => B): F[B] =
-    Effect[F].map(a)(f)
+    def map[B](f: A => B): F[B] =
+      Effect[F].map(a)(f)
 
-  def flatMap[B](f: A => F[B]): F[B] =
-    Effect[F].flatMap(a)(f)
+    def flatMap[B](f: A => F[B]): F[B] =
+      Effect[F].flatMap(a)(f)

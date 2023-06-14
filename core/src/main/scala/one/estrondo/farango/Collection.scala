@@ -4,6 +4,8 @@ import com.arangodb.ArangoCollection
 import com.arangodb.entity.IndexEntity
 import com.arangodb.entity.InvertedIndexEntity
 import com.arangodb.model.CollectionCreateOptions
+import one.estrondo.farango.EffectOps.flatMap
+import one.estrondo.farango.EffectOps.map
 import one.estrondo.farango.collection.PartiallyAppliedDeleteDocument
 import one.estrondo.farango.collection.PartiallyAppliedGetDocument
 import one.estrondo.farango.collection.PartiallyAppliedInsertDocument
@@ -12,6 +14,8 @@ import one.estrondo.farango.collection.PartiallyAppliedUpdateDocument
 trait Collection:
 
   def arango: ArangoCollection
+
+  def database: Database
 
   def name: String
 
@@ -43,7 +47,7 @@ object Collection:
   )(indexes: IndexEnsurer*): F[Collection] =
     Impl(database, name, options, indexes).create()
   private class Impl(
-      database: Database,
+      val database: Database,
       val name: String,
       options: Option[CollectionCreateOptions],
       indexes: Seq[IndexEnsurer]

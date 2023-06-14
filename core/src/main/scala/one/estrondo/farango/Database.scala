@@ -4,6 +4,7 @@ import com.arangodb.ArangoDatabase
 import com.arangodb.ArangoDBException
 import com.arangodb.model.CollectionCreateOptions
 import com.arangodb.model.DBCreateOptions
+import one.estrondo.farango.database.PartiallyAppliedQuery
 
 trait Database:
 
@@ -18,6 +19,8 @@ trait Database:
   def create[F[_]: Effect](): F[Database]
 
   def name: String
+
+  def query[S]: PartiallyAppliedQuery[S] = PartiallyAppliedQuery(arango)
 
 object Database:
 

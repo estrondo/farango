@@ -12,6 +12,8 @@ import com.arangodb.model.DocumentCreateOptions
 import com.arangodb.model.DocumentDeleteOptions
 import com.arangodb.model.DocumentReadOptions
 import com.arangodb.model.DocumentUpdateOptions
+import one.estrondo.farango.EffectOps.flatMap
+import one.estrondo.farango.EffectOps.map
 import org.mockito.Mockito
 import org.scalatest.matchers.HavePropertyMatcher
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,7 +21,8 @@ import scala.concurrent.Future
 import scala.language.implicitConversions
 import scala.util.Try
 
-abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[F]:
+abstract class CollectionSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffectToEffect[S])
+    extends FarangoSpec[F, S]:
 
   protected def createMockContext(): MockContext =
     val database         = mock[Database]
@@ -223,8 +226,8 @@ abstract class CollectionSpec[F[_]: Effect: EffectToFuture] extends FarangoSpec[
     }
   }
 
-class CollectionSpecWithTry extends CollectionSpec[Try]
+class CollectionSpecWithTry extends CollectionSpec[Try, Vector]
 
-class CollectionSpecWithEither extends CollectionSpec[[X] =>> Either[Throwable, X]]
+class CollectionSpecWithEither extends CollectionSpec[[X] =>> Either[Throwable, X], Vector]
 
-class CollectionSpecWithFuture extends CollectionSpec[[X] =>> Future[X]]
+class CollectionSpecWithFuture extends CollectionSpec[[X] =>> Future[X], Vector]

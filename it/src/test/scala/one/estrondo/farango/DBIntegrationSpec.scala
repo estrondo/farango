@@ -2,12 +2,14 @@ package one.estrondo.farango
 
 import com.arangodb.model.DatabaseOptions
 import com.arangodb.model.DBCreateOptions
+import one.estrondo.farango.EffectOps.map
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.language.implicitConversions
 import scala.util.Try
 
-abstract class DBIntegrationSpec[F[_]: Effect: EffectToFuture] extends FarangoIntegrationSpec[F]:
+abstract class DBIntegrationSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffectToEffect[S])
+    extends FarangoIntegrationSpec[F, S]:
 
   "A DB" - {
     "It should create a new database with a name." in withDB { db =>
@@ -22,8 +24,8 @@ abstract class DBIntegrationSpec[F[_]: Effect: EffectToFuture] extends FarangoIn
     }
   }
 
-class DBIntegrationSpecWithTry extends DBIntegrationSpec[Try]
+class DBIntegrationSpecWithTry extends DBIntegrationSpec[Try, Vector]
 
-class DBIntegrationSpecWithEither extends DBIntegrationSpec[[X] =>> Either[Throwable, X]]
+class DBIntegrationSpecWithEither extends DBIntegrationSpec[[X] =>> Either[Throwable, X], Vector]
 
-class DBIntegrationSpecWithFuture extends DBIntegrationSpec[[X] =>> Future[X]]
+class DBIntegrationSpecWithFuture extends DBIntegrationSpec[[X] =>> Future[X], Vector]

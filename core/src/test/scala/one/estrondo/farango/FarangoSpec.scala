@@ -10,7 +10,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-abstract class FarangoSpec[F[_]: EffectToFuture] extends AsyncFreeSpec, Matchers:
+abstract class FarangoSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffectToEffect[S])
+    extends AsyncFreeSpec,
+      Matchers:
 
   export ArgumentMatchers.{eq => eqTo}
   export Mockito.verify
@@ -26,3 +28,5 @@ abstract class FarangoSpec[F[_]: EffectToFuture] extends AsyncFreeSpec, Matchers
 
     override def apply(x: F[Assertion]): Future[Assertion] =
       summon[EffectToFuture[F]].toFuture(x)
+
+  extension [A](stream: S[A]) def collect(): F[Iterable[A]] = summon[StreamEffectToEffect[S]].collect(stream)
