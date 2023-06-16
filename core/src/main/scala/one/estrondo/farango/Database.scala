@@ -24,9 +24,8 @@ trait Database:
 
 object Database:
 
-  def apply[F[_]: Effect](db: DB, nameOrOptions: String | DBCreateOptions, create: Boolean = false): F[Database] =
-    val impl = Impl(db, nameOrOptions)
-    if create then impl.create() else Effect[F].succeed(impl)
+  def apply(db: DB, nameOrOptions: String | DBCreateOptions): Database =
+    Impl(db, nameOrOptions)
 
   private class Impl(db: DB, nameOrOptions: DBCreateOptions | String) extends Database:
 

@@ -19,6 +19,7 @@ trait Collection:
 
   def name: String
 
+  /** @tparam S The Stored Document's type. */
   // noinspection MutatorLikeMethodIsParameterless
   def deleteDocument[S]: PartiallyAppliedDeleteDocument[S] = PartiallyAppliedDeleteDocument(arango)
 
@@ -27,8 +28,8 @@ trait Collection:
     */
   def getDocument[S]: PartiallyAppliedGetDocument[S] = PartiallyAppliedGetDocument(arango)
 
-  // noinspection MutatorLikeMethodIsParameterless
   /** @tparam S The Stored Document's type. */
+  // noinspection MutatorLikeMethodIsParameterless
   def insertDocument[S]: PartiallyAppliedInsertDocument[S] = PartiallyAppliedInsertDocument(arango)
 
   /** @tparam S
@@ -36,6 +37,7 @@ trait Collection:
     * @tparam U
     *   The type which is used to update the document in collection.
     */
+  // noinspection MutatorLikeMethodIsParameterless
   def updateDocument[S, U]: PartiallyAppliedUpdateDocument[S, U] = PartiallyAppliedUpdateDocument(arango)
 
 object Collection:

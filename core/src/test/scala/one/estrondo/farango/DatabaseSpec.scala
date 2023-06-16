@@ -30,7 +30,7 @@ abstract class DatabaseSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffe
       arangoDB = arangoDB,
       arangoDatabase = arangoDatabase,
       db = db,
-      getDatabase = Database(db, "test-database")
+      database = Database(db, "test-database")
     )
 
   "A Database" - {
@@ -54,9 +54,7 @@ abstract class DatabaseSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffe
       when(cursor.stream())
         .thenReturn(stream.Stream.of(StoredDocument(_key = "A", name = "B")))
 
-      for
-        database  <- getDatabase
-        documents <- database.query[StoredDocument](expectedQuery).collect()
+      for documents <- database.query[StoredDocument](expectedQuery).collect()
       yield documents should contain only (UserDocument(_key = "A", name = "B"))
     }
   }
@@ -68,7 +66,7 @@ abstract class DatabaseSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffe
       arangoDB: ArangoDB,
       arangoDatabase: ArangoDatabase,
       db: DB,
-      getDatabase: F[Database]
+      database: Database
   )
 
   given Transformer[StoredDocument, UserDocument] with

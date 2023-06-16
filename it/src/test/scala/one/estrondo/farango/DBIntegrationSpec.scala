@@ -13,13 +13,15 @@ abstract class DBIntegrationSpec[F[_]: Effect: EffectToFuture, S[_]](using Strea
 
   "A DB" - {
     "It should create a new database with a name." in withDB { db =>
-      for database <- DB(db).db("test-database", true)
+      for database <- DB(db).db("test-database").create()
       yield database.arango.name() should be("test-database")
     }
 
     "It should create a new database with options." in withDB { db =>
       for database <-
-          DB(db).db(DBCreateOptions().name("test-database").options(DatabaseOptions().sharding("test-sharding")), true)
+          DB(db)
+            .db(DBCreateOptions().name("test-database").options(DatabaseOptions().sharding("test-sharding")))
+            .create()
       yield database.arango.exists() should be(true)
     }
   }

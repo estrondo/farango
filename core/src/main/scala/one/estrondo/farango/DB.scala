@@ -6,7 +6,7 @@ import com.arangodb.model.DBCreateOptions
 trait DB:
 
   def arango: ArangoDB
-  def db[F[_]: Effect](nameOrOptions: String | DBCreateOptions, create: Boolean = false): F[Database]
+  def db(nameOrOptions: String | DBCreateOptions): Database
 
 object DB:
 
@@ -15,5 +15,5 @@ object DB:
 
   private class Impl(val arango: ArangoDB) extends DB:
 
-    override def db[F[_]: Effect](nameOrOptions: String | DBCreateOptions, create: Boolean = false): F[Database] =
-      Database(this, nameOrOptions, create)
+    override def db(nameOrOptions: String | DBCreateOptions): Database =
+      Database(this, nameOrOptions)

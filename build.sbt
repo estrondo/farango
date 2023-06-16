@@ -13,7 +13,8 @@ ThisBuild / scalacOptions ++= Seq(
 
 lazy val root = (project in file("."))
   .settings(
-    name := "farango-root"
+    name           := "farango-root",
+    publish / skip := true
   )
   .aggregate(
     core,

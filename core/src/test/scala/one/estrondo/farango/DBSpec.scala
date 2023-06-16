@@ -22,7 +22,9 @@ abstract class DBSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffectToEf
       when(arangoDB.createDatabase("test-database"))
         .thenReturn(true)
 
-      for database <- DB(arangoDB).db("test-database", true)
+      val database = DB(arangoDB).db("test-database")
+
+      for _ <- database.create()
       yield database.arango should be(expectedArangoDatabase)
     }
 
@@ -37,7 +39,9 @@ abstract class DBSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffectToEf
       when(arangoDB.createDatabase(options))
         .thenReturn(true)
 
-      for database <- DB(arangoDB).db(options, true)
+      val database = DB(arangoDB).db(options)
+
+      for _ <- database.create()
       yield database.arango should be(expectedArangoDatabase)
     }
   }

@@ -9,6 +9,7 @@ import one.estrondo.farango.EffectOps.map
 import org.scalatest.Assertion
 import org.testcontainers.containers.wait.strategy.Wait
 import scala.concurrent.Future
+import scala.language.implicitConversions
 
 abstract class FarangoIntegrationSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffectToEffect[S])
     extends FarangoSpec[F, S],
@@ -23,7 +24,7 @@ abstract class FarangoIntegrationSpec[F[_]: Effect: EffectToFuture, S[_]](using 
   protected def withCollection(block: Collection => F[Assertion]): Future[Assertion] =
     withDB { db =>
       for
-        database   <- DB(db).db("test-database", true)
+        database   <- DB(db).db("test-database").create()
         collection <- database.collection("test-collection", Some(CollectionCreateOptions().waitForSync(true)))
         assertion  <- block(collection)
       yield assertion
