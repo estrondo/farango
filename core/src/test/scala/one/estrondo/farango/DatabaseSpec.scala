@@ -5,7 +5,6 @@ import com.arangodb.ArangoDatabase
 import com.arangodb.ArangoDB
 import com.arangodb.model.AqlQueryOptions
 import java.util.stream
-import one.estrondo.farango.EffectOps.flatMap
 import one.estrondo.farango.EffectOps.map
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

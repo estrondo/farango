@@ -2,6 +2,8 @@ package one.estrondo.farango
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Assertion
 import org.scalatest.freespec.AsyncFreeSpec
@@ -16,10 +18,22 @@ abstract class FarangoSpec[F[_]: Effect: EffectToFuture, S[_]](using StreamEffec
 
   export ArgumentMatchers.{eq => eqTo}
   export Mockito.verify
-  export MockitoSugar.mock
 
-  protected inline def when[R](inline methodCall: R): OngoingStubbing[R] =
-    Mockito.when(methodCall)
+  private var ongoingStubbing = false
+
+  protected def mock[T <: AnyRef: ClassTag]: T =
+    MockitoSugar.mock[T](defaultAnswer)
+
+  protected def defaultAnswer: Answer[_] = (_: InvocationOnMock) =>
+    if ongoingStubbing then null
+    else throw new IllegalStateException("Invalid call!")
+
+  protected def when[R](methodCall: => R): OngoingStubbing[R] =
+    ongoingStubbing = true
+    try
+      Mockito.when(methodCall)
+    finally
+      ongoingStubbing = false
 
   protected inline def any[T: ClassTag]: T =
     ArgumentMatchers.any(summon[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]])

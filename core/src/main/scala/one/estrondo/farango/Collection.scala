@@ -1,15 +1,12 @@
 package one.estrondo.farango
 
 import com.arangodb.ArangoCollection
-import com.arangodb.entity.IndexEntity
-import com.arangodb.entity.InvertedIndexEntity
 import com.arangodb.model.CollectionCreateOptions
-import one.estrondo.farango.EffectOps.flatMap
-import one.estrondo.farango.EffectOps.map
 import one.estrondo.farango.collection.PartiallyAppliedDeleteDocument
 import one.estrondo.farango.collection.PartiallyAppliedGetDocument
 import one.estrondo.farango.collection.PartiallyAppliedInsertDocument
 import one.estrondo.farango.collection.PartiallyAppliedUpdateDocument
+import scala.util.Try
 
 trait Collection:
 
@@ -18,6 +15,8 @@ trait Collection:
   def database: Database
 
   def name: String
+
+  def create[F[_]: Effect](): F[Collection] = Effect[F].attemptBlockingTry(tryCreate())
 
   /** @tparam S The Stored Document's type. */
   // noinspection MutatorLikeMethodIsParameterless
@@ -40,35 +39,30 @@ trait Collection:
   // noinspection MutatorLikeMethodIsParameterless
   def updateDocument[S, U]: PartiallyAppliedUpdateDocument[S, U] = PartiallyAppliedUpdateDocument(arango)
 
+  def tryCreate(): Try[Collection]
+
 object Collection:
 
-  def apply[F[_]: Effect](
+  def apply(
       database: Database,
       name: String,
-      options: Option[CollectionCreateOptions] = None
-  )(indexes: IndexEnsurer*): F[Collection] =
-    Impl(database, name, options, indexes).create()
+      indexes: Seq[IndexEnsurer] = Nil,
+      options: CollectionCreateOptions = CollectionCreateOptions()
+  ): Collection =
+    Impl(database, name, options, indexes)
+
   private class Impl(
       val database: Database,
       val name: String,
-      options: Option[CollectionCreateOptions],
+      options: CollectionCreateOptions,
       indexes: Seq[IndexEnsurer]
   ) extends Collection:
 
-    val arango = database.arango.collection(name)
+    val arango: ArangoCollection = database.arango.collection(name)
 
-    def create[F[_]: Effect](): F[Collection] =
-      for
-        _ <- Effect[F].attemptBlocking {
-               options match
-                 case Some(options) => arango.create(options)
-                 case None          => arango.create()
-             }
-        _ <- createIndexes()
-      yield this
-
-    private def createIndexes[F[_]: Effect](): F[Seq[IndexEntity | InvertedIndexEntity]] =
-      for result <- Effect[F].foreach(indexes) { index =>
-                      index(arango)
-                    }
-      yield result
+    override def tryCreate(): Try[Collection] =
+      for root <- database.root yield
+        val collection = root.collection(name)
+        collection.create(options)
+        for ensurer <- indexes do ensurer(collection)
+        this

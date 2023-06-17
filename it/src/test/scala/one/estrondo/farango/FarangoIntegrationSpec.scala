@@ -1,6 +1,5 @@
 package one.estrondo.farango
 
-import com.arangodb.ArangoDB
 import com.arangodb.model.CollectionCreateOptions
 import com.dimafeng.testcontainers.GenericContainer
 import com.dimafeng.testcontainers.scalatest.TestContainerForEach
@@ -24,19 +23,27 @@ abstract class FarangoIntegrationSpec[F[_]: Effect: EffectToFuture, S[_]](using 
   protected def withCollection(block: Collection => F[Assertion]): Future[Assertion] =
     withDB { db =>
       for
-        database   <- DB(db).db("test-database").create()
-        collection <- database.collection("test-collection", Some(CollectionCreateOptions().waitForSync(true)))
+        database   <- db.db("test-database").create()
+        collection <- database.collection("test-collection", Nil, CollectionCreateOptions().waitForSync(true)).create()
         assertion  <- block(collection)
       yield assertion
     }
 
-  protected def withDB(block: ArangoDB => Future[Assertion]): Future[Assertion] =
+  protected def withDB(block: DB => Future[Assertion]): Future[Assertion] =
     withContainers { container =>
-      block(
-        builder()
-          .host(container.host, container.mappedPort(8529))
-          .user("root")
-          .password("farango")
-          .build()
-      )
+      block {
+        val db = DB
+          .tryApply(
+            ArangoBuilder()
+              .addHost(container.host, container.mappedPort(8529))
+              .withUser("test-user")
+              .withPassword("test-user")
+              .withRootPassword("farango")
+          )
+          .get
+
+        db.tryCreateUser("test-user", "test-user").get
+
+        db
+      }
     }

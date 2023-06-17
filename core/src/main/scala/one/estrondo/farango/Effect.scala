@@ -1,12 +1,21 @@
 package one.estrondo.farango
 
 import scala.collection.Factory
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 trait Effect[F[_]]:
 
   def attempt[A](value: => A): F[A]
 
   def attemptBlocking[A](value: => A): F[A]
+
+  def attemptBlockingTry[A](value: => Try[A]): F[A] =
+    flatMap(attemptBlocking(value)) {
+      case Success(value) => succeed(value)
+      case Failure(cause) => fail(cause)
+    }
 
   def fail[A](cause: => Throwable): F[A]
 
