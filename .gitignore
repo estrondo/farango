@@ -16,3 +16,6 @@
 /it/target/
 /zio/target/
 /zio-it/target/
+
+/cats-effect/target/
+/cats-effect-it/target/

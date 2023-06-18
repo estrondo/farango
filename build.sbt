@@ -20,7 +20,9 @@ lazy val root = (project in file("."))
     core,
     zio,
     it,
-    zioIt
+    zioIt,
+    catsEffect,
+    catsEffectIt
   )
 
 lazy val core = (project in file("core"))
@@ -29,6 +31,7 @@ lazy val core = (project in file("core"))
     libraryDependencies ++= Seq(
       Dependencies.ArangoDBDriver,
       Dependencies.JacksonScalaModule,
+      Dependencies.JacksonJavaModules,
       Dependencies.ScalaTest,
       Dependencies.ScalatestMockito
     ).flatten
@@ -59,6 +62,18 @@ lazy val zio = (project in file("zio"))
     core % "test->test"
   )
 
+lazy val catsEffect = (project in file("cats-effect"))
+  .settings(
+    name := "farango-cats-effect",
+    libraryDependencies ++= Seq(
+      Dependencies.CatsEffect
+    ).flatten
+  )
+  .dependsOn(
+    core,
+    core % "test->test"
+  )
+
 lazy val zioIt = (project in file("zio-it"))
   .settings(
     name := "farango-zio-it"
@@ -67,4 +82,14 @@ lazy val zioIt = (project in file("zio-it"))
     zio,
     zio % "test->test",
     it  % "test->test"
+  )
+
+lazy val catsEffectIt = (project in file("cats-effect-it"))
+  .settings(
+    name := "farango-cats-effect-it"
+  )
+  .dependsOn(
+    catsEffect,
+    catsEffect % "test->test",
+    it         % "test->test"
   )
