@@ -8,7 +8,7 @@ import one.estrondo.farango.typeOf
 import scala.reflect.ClassTag
 import scala.util.Try
 
-class SyncPartialGetDocument[A](arango: ArangoCollection) extends PartialGetDocument[A], SyncComposed:
+class SyncPartialGetDocument[A, R](arango: ArangoCollection) extends PartialGetDocument[A, R], SyncComposed:
 
   override protected def get(key: String, options: DocumentReadOptions)(using ClassTag[A]): Try[Option[A]] =
     Try(Option(arango.getDocument(key, typeOf[A], options)))

@@ -18,6 +18,6 @@ trait Database extends Composed:
       options: CollectionCreateOptions = CollectionCreateOptions()
   ): CollectionRep
 
-  def query[A]: PartialQuery[A]
+  def query[A, R]: PartialQuery[A, R]
 
   protected def _create(): G[DatabaseRep]

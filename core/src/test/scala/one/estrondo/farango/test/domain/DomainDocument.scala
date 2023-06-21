@@ -38,3 +38,8 @@ given Transformer[DomainDocument, StoredDocument] with
     createdAt = value.createdAt,
     lastAccess = LocalDateTime.now(Clock.systemUTC()).truncatedTo(ChronoUnit.SECONDS)
   )
+
+given Transformer[DomainDocument, UpdateDomainDocument] with
+
+  override def transform(value: DomainDocument): UpdateDomainDocument =
+    UpdateDomainDocument(title = value.title, length = value.length)

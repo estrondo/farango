@@ -6,4 +6,4 @@ sealed trait IndexDescription
 
 object IndexDescription:
 
-  case class Geo(val fields: Seq[String], options: GeoIndexOptions)
+  case class Geo(val fields: Seq[String], options: GeoIndexOptions) extends IndexDescription

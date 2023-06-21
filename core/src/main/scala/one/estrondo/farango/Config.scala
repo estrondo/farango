@@ -8,8 +8,6 @@ import com.arangodb.config.HostDescription
 import com.arangodb.entity.LoadBalancingStrategy
 import com.arangodb.serde.ArangoSerde
 import com.arangodb.serde.jackson.JacksonSerde
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
@@ -114,7 +112,7 @@ object ConfigBuilder:
         case (Some(user), Some(password)) => build(config, user, password)
         case (Some(_), _)                 => Failure(ArangoDBException("Farango: No password was defined!"))
         case (None, _)                    => Failure(ArangoDBException("Farango: No user was defined!"))
-        case _                            => Failure(ArangoDBException("Farango: No used and password as defined!"))
+        case _                            => Failure(ArangoDBException("Farango: No used and/or password were defined!"))
 
     private def build(config: Config, user: String, password: String): Try[ArangoDB] =
       val builder = ArangoDB

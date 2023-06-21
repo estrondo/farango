@@ -10,7 +10,7 @@ import one.estrondo.farango.typeOf
 import scala.reflect.ClassTag
 import scala.util.Try
 
-class SyncPartialQuery[A](arango: ArangoDatabase) extends PartialQuery[A], SyncComposed:
+class SyncPartialQuery[A, R](arango: ArangoDatabase) extends PartialQuery[A, R], SyncComposed:
   override protected def search(query: String, bindVars: util.Map[String, Object], options: AqlQueryOptions)(using
       ClassTag[A]
   ): Try[stream.Stream[A]] =

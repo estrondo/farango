@@ -9,7 +9,7 @@ import one.estrondo.farango.typeOf
 import scala.reflect.ClassTag
 import scala.util.Try
 
-class SyncPartialInsertDocument[A](arango: ArangoCollection) extends PartialInsertDocument[A], SyncComposed:
+class SyncPartialInsertDocument[A, R](arango: ArangoCollection) extends PartialInsertDocument[A, R], SyncComposed:
 
   override protected def insert(document: A, options: DocumentCreateOptions)(using
       ClassTag[A]

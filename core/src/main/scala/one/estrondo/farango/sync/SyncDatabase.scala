@@ -40,7 +40,7 @@ object SyncDatabase:
         options: CollectionCreateOptions
     ): SyncCollection = SyncCollection(this, name, indexes, options)
 
-    override def query[S]: PartialQuery[S] = SyncPartialQuery(arango)
+    override def query[S, R]: PartialQuery[S, R] = SyncPartialQuery(arango)
 
     override def root: Try[ArangoDatabase] =
       for root <- db.root yield root.db(name)

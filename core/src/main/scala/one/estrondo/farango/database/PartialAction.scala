@@ -12,16 +12,16 @@ import scala.jdk.CollectionConverters.MapHasAsJava
 import scala.reflect.ClassTag
 
 //noinspection ScalaFileName
-trait PartialQuery[A] extends Composed:
+trait PartialQuery[A, R] extends Composed:
 
-  def apply[T, F[_]: Effect, S[_]](
+  def apply[F[_]: Effect, S[_]](
       query: String,
       bindVars: Map[String, AnyRef] = Map.empty,
       options: AqlQueryOptions = AqlQueryOptions()
-  )(using EffectStream[S, F], Transformer[A, T], ClassTag[A]): S[T] =
+  )(using EffectStream[S, F], Transformer[A, R], ClassTag[A]): S[R] =
     EffectStream[S, F]
       .fromJavaStream(compose(search(query, bindVars.asJava, options)))
-      .map(Transformer[A, T].apply)
+      .map(Transformer[A, R].apply)
 
   protected def search(query: String, bindVars: util.Map[String, Object], options: AqlQueryOptions)(using
       ClassTag[A]
