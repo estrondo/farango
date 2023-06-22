@@ -14,6 +14,11 @@ abstract class DBIntegrationSpec[F[+_]: Effect: EffectToFuture, S[_]](using
       for entity <- db.createUser("einstein", "emc2")
       yield entity shouldNot be(null)
     }
+
+    "It should create the default user." in withDB(createUser = false) { db =>
+      for entity <- db.createDefaultUser()
+      yield entity.getUser should be(db.config.user)
+    }
   }
 
 abstract class SyncDBIntegrationSpec[F[+_]: Effect: EffectToFuture, S[_]](using

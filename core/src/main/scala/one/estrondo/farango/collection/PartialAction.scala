@@ -18,10 +18,10 @@ import scala.reflect.ClassTag
 trait PartialDeleteDocument[A, R] extends Composed:
 
   def apply[F[+_]: Effect](using
-                           FarangoTransformer[A, R],
-                           EntityMapper[DocumentDeleteEntity],
-                           ClassTag[A],
-                           Null <:< R
+      FarangoTransformer[A, R],
+      EntityMapper[DocumentDeleteEntity],
+      ClassTag[A],
+      Null <:< R
   )(key: String, options: DocumentDeleteOptions = DocumentDeleteOptions()): F[DocumentDeleteEntity[R]] =
     for
       entity <- compose(remove(key, options))
@@ -33,8 +33,8 @@ trait PartialDeleteDocument[A, R] extends Composed:
 trait PartialGetDocument[A, R] extends Composed:
 
   def apply[F[+_]: Effect](using
-                           FarangoTransformer[A, R],
-                           ClassTag[A]
+      FarangoTransformer[A, R],
+      ClassTag[A]
   )(key: String, options: DocumentReadOptions = DocumentReadOptions()): F[Option[R]] =
     for
       restored    <- compose(get(key, options))
@@ -46,11 +46,11 @@ trait PartialGetDocument[A, R] extends Composed:
 trait PartialInsertDocument[A, R] extends Composed:
 
   def apply[T, F[+_]: Effect](document: T, options: DocumentCreateOptions = DocumentCreateOptions())(using
-                                                                                                     FarangoTransformer[T, A],
-                                                                                                     FarangoTransformer[A, R],
-                                                                                                     EntityMapper[DocumentCreateEntity],
-                                                                                                     ClassTag[A],
-                                                                                                     Null <:< R
+      FarangoTransformer[T, A],
+      FarangoTransformer[A, R],
+      EntityMapper[DocumentCreateEntity],
+      ClassTag[A],
+      Null <:< R
   ): F[DocumentCreateEntity[R]] =
     for
       transformed  <- FarangoTransformer[T, A](document)
@@ -63,11 +63,11 @@ trait PartialInsertDocument[A, R] extends Composed:
 trait PartialUpdateDocument[A, U, R] extends Composed:
 
   def apply[T, F[+_]: Effect](key: String, value: T, options: DocumentUpdateOptions = DocumentUpdateOptions())(using
-                                                                                                               FarangoTransformer[T, U],
-                                                                                                               FarangoTransformer[A, R],
-                                                                                                               EntityMapper[DocumentUpdateEntity],
-                                                                                                               ClassTag[A],
-                                                                                                               Null <:< R
+      FarangoTransformer[T, U],
+      FarangoTransformer[A, R],
+      EntityMapper[DocumentUpdateEntity],
+      ClassTag[A],
+      Null <:< R
   ): F[DocumentUpdateEntity[R]] =
     for
       transformedValue <- FarangoTransformer[T, U](value)

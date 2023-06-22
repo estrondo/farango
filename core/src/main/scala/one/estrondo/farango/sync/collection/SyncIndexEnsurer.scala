@@ -6,9 +6,9 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 
 object SyncIndexEnsurer:
 
-  def apply(index: IndexDescription, collection: ArangoCollection): Int =
+  def apply(index: IndexDescription, collection: ArangoCollection): String =
     index match
       case description: IndexDescription.Geo => geo(description, collection)
 
-  private def geo(description: IndexDescription.Geo, collection: ArangoCollection): Int =
-    collection.ensureGeoIndex(description.fields.asJava, description.options).getId.toInt
+  private def geo(description: IndexDescription.Geo, collection: ArangoCollection): String =
+    collection.ensureGeoIndex(description.fields.asJava, description.options).getId

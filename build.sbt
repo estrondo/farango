@@ -22,7 +22,8 @@ lazy val root = (project in file("."))
     it,
     zioIt,
     catsEffect,
-    catsEffectIt
+    catsEffectIt,
+    examples
   )
 
 lazy val core = (project in file("core"))
@@ -104,4 +105,16 @@ lazy val catsEffectIt = (project in file("cats-effect-it"))
     catsEffect,
     catsEffect % "test->test",
     it         % "test->test"
+  )
+
+lazy val examples = (project in file("examples"))
+  .settings(
+    name           := "farango-examples",
+    publish / skip := true
+  )
+  .dependsOn(
+    core,
+    zio,
+    catsEffect,
+    duckTape
   )
