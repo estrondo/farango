@@ -22,12 +22,14 @@ abstract class DucktapeTransformerSpec[F[+_]: Effect: EffectToFuture, S[_]](usin
 ) extends FarangoSpec[F, S]:
 
   given FarangoTransformer[DomainObject, StorageObject] = DucktapeTransformer(
-    Transformer.define.build(Field.renamed(_._key, _.id))
+    Field.renamed(_._key, _.id)
   )
 
   case class DomainObject(id: UUID, title: String, createdAt: LocalDateTime)
 
   case class StorageObject(_key: UUID, title: String, createdAt: String)
+
+  case class ExternalObject(id: UUID)
 
   given Transformer[LocalDateTime, String] with
     override def transform(from: LocalDateTime): String = from.toString
@@ -51,6 +53,18 @@ abstract class DucktapeTransformerSpec[F[+_]: Effect: EffectToFuture, S[_]](usin
 
       for transformed <- FarangoTransformer[DomainObject, StorageObject](source)
       yield transformed should be(expected)
+    }
+
+    "I should create an automatic transformer." in {
+      val source = DomainObject(
+        id = UUID.randomUUID(),
+        title = "A title",
+        createdAt = LocalDateTime.now()
+      )
+
+      for transformed <- FarangoTransformer[DomainObject, ExternalObject](source)
+      yield transformed should be(ExternalObject(source.id))
+
     }
   }
 

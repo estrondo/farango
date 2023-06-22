@@ -20,8 +20,9 @@ lazy val root = (project in file("."))
     core,
     zio,
     it,
-    zioIt,
+    ducktape,
     catsEffect,
+    zioIt,
     catsEffectIt,
     examples
   )
@@ -85,7 +86,7 @@ lazy val zioIt = (project in file("zio-it"))
     it  % "test->test"
   )
 
-lazy val duckTape = (project in file("ducktape"))
+lazy val ducktape = (project in file("ducktape"))
   .settings(
     name := "farango-ducktape",
     libraryDependencies ++= Seq(
@@ -116,5 +117,5 @@ lazy val examples = (project in file("examples"))
     core,
     zio,
     catsEffect,
-    duckTape
+    ducktape
   )
