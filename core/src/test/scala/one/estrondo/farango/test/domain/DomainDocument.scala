@@ -4,7 +4,7 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-import one.estrondo.farango.Transformer
+import one.estrondo.farango.FarangoTransformer
 import one.estrondo.farango.test.stored.StoredDocument
 import scala.util.Random
 
@@ -29,7 +29,7 @@ object DomainDocumentFixture:
         .truncatedTo(ChronoUnit.SECONDS)
     )
 
-given Transformer[DomainDocument, StoredDocument] with
+given FarangoTransformer[DomainDocument, StoredDocument] with
 
   override def transform(value: DomainDocument): StoredDocument = StoredDocument(
     _key = value._key,
@@ -39,7 +39,7 @@ given Transformer[DomainDocument, StoredDocument] with
     lastAccess = LocalDateTime.now(Clock.systemUTC()).truncatedTo(ChronoUnit.SECONDS)
   )
 
-given Transformer[DomainDocument, UpdateDomainDocument] with
+given FarangoTransformer[DomainDocument, UpdateDomainDocument] with
 
   override def transform(value: DomainDocument): UpdateDomainDocument =
     UpdateDomainDocument(title = value.title, length = value.length)

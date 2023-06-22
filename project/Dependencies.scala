@@ -19,6 +19,10 @@ object Dependencies {
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % Version.Jackson
   )
 
+  val DuckTape = Seq(
+    "io.github.arainko" %% "ducktape" % Version.DuckTape
+  )
+
   val JacksonJavaModules = Seq(
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310"        % Version.Jackson,
     "com.fasterxml.jackson.module"   % "jackson-module-parameter-names" % Version.Jackson,
@@ -45,6 +49,7 @@ object Dependencies {
   object Version {
     val ArangoDBDriver      = "7.1.0"
     val CatsEffect          = "3.5.0"
+    val DuckTape            = "0.1.8"
     val FS2                 = "3.7.0"
     val Reload4j            = "2.0.7"
     val ScalaTest           = "3.2.16"

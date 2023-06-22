@@ -84,6 +84,18 @@ lazy val zioIt = (project in file("zio-it"))
     it  % "test->test"
   )
 
+lazy val duckTape = (project in file("ducktape"))
+  .settings(
+    name := "farango-ducktape",
+    libraryDependencies ++= Seq(
+      Dependencies.DuckTape
+    ).flatten
+  )
+  .dependsOn(
+    core,
+    core % "test->test"
+  )
+
 lazy val catsEffectIt = (project in file("cats-effect-it"))
   .settings(
     name := "farango-cats-effect-it"

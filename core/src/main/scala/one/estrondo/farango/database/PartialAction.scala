@@ -7,7 +7,7 @@ import one.estrondo.farango.Composed
 import one.estrondo.farango.Effect
 import one.estrondo.farango.EffectStream
 import one.estrondo.farango.EffectStreamOps.map
-import one.estrondo.farango.Transformer
+import one.estrondo.farango.FarangoTransformer
 import scala.jdk.CollectionConverters.MapHasAsJava
 import scala.reflect.ClassTag
 
@@ -18,10 +18,10 @@ trait PartialQuery[A, R] extends Composed:
       query: String,
       bindVars: Map[String, AnyRef] = Map.empty,
       options: AqlQueryOptions = AqlQueryOptions()
-  )(using EffectStream[S, F], Transformer[A, R], ClassTag[A]): S[R] =
+  )(using EffectStream[S, F], FarangoTransformer[A, R], ClassTag[A]): S[R] =
     EffectStream[S, F]
       .fromJavaStream(compose(search(query, bindVars.asJava, options)))
-      .map(Transformer[A, R].apply)
+      .map(FarangoTransformer[A, R].apply)
 
   protected def search(query: String, bindVars: util.Map[String, Object], options: AqlQueryOptions)(using
       ClassTag[A]

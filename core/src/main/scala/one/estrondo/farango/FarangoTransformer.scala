@@ -2,7 +2,7 @@ package one.estrondo.farango
 
 import scala.util.Try
 
-trait Transformer[A, B]:
+trait FarangoTransformer[A, B]:
 
   def fromOption[F[+_]: Effect](option: Option[A]): F[Option[B]] =
     option match
@@ -14,7 +14,7 @@ trait Transformer[A, B]:
 
   def transform(value: A): B
 
-object Transformer:
+object FarangoTransformer:
 
-  inline def apply[A, B](using Transformer[A, B]): Transformer[A, B] =
-    summon[Transformer[A, B]]
+  inline def apply[A, B](using FarangoTransformer[A, B]): FarangoTransformer[A, B] =
+    summon[FarangoTransformer[A, B]]

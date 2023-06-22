@@ -1,7 +1,7 @@
 package one.estrondo.farango.test.stored
 
 import java.time.LocalDateTime
-import one.estrondo.farango.Transformer
+import one.estrondo.farango.FarangoTransformer
 import one.estrondo.farango.test.domain.DomainDocument
 import one.estrondo.farango.test.domain.KeyDocument
 
@@ -13,7 +13,7 @@ case class StoredDocument(
     lastAccess: LocalDateTime
 )
 
-given Transformer[StoredDocument, DomainDocument] with
+given FarangoTransformer[StoredDocument, DomainDocument] with
 
   override def transform(value: StoredDocument): DomainDocument =
     DomainDocument(
@@ -23,6 +23,6 @@ given Transformer[StoredDocument, DomainDocument] with
       createdAt = value.createdAt
     )
 
-given Transformer[StoredDocument, KeyDocument] with
+given FarangoTransformer[StoredDocument, KeyDocument] with
 
   override def transform(value: StoredDocument): KeyDocument = KeyDocument(value._key)

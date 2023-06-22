@@ -8,11 +8,11 @@ import java.lang.reflect.Field
 import one.estrondo.farango.Effect
 import one.estrondo.farango.EffectOps.flatMap
 import one.estrondo.farango.EffectOps.map
-import one.estrondo.farango.Transformer
+import one.estrondo.farango.FarangoTransformer
 
 trait EntityMapper[E[_] <: DocumentEntity]:
 
-  def map[A, B, F[+_]: Effect](entity: E[A])(using Transformer[A, B], Null <:< B): F[E[B]]
+  def map[A, B, F[+_]: Effect](entity: E[A])(using FarangoTransformer[A, B], Null <:< B): F[E[B]]
 
 object EntityMapper:
 
@@ -39,10 +39,10 @@ object EntityMapper:
 
     override def map[A, B, F[+_]: Effect](
         entity: DocumentCreateEntity[A]
-    )(using Transformer[A, B], Null <:< B): F[DocumentCreateEntity[B]] =
+    )(using FarangoTransformer[A, B], Null <:< B): F[DocumentCreateEntity[B]] =
       for
-        oldValue <- Transformer[A, B].fromOption(Option(entity.getOld))
-        newValue <- Transformer[A, B].fromOption(Option(entity.getNew))
+        oldValue <- FarangoTransformer[A, B].fromOption(Option(entity.getOld))
+        newValue <- FarangoTransformer[A, B].fromOption(Option(entity.getNew))
       yield
         val newEntity = copy(entity, DocumentCreateEntity[B])
         newEntity.setOld(oldValue.orNull)
@@ -53,8 +53,8 @@ object EntityMapper:
 
     override def map[A, B, F[+_]: Effect](
         entity: DocumentDeleteEntity[A]
-    )(using Transformer[A, B], Null <:< B): F[DocumentDeleteEntity[B]] =
-      for oldValue <- Transformer[A, B].fromOption(Option(entity.getOld))
+    )(using FarangoTransformer[A, B], Null <:< B): F[DocumentDeleteEntity[B]] =
+      for oldValue <- FarangoTransformer[A, B].fromOption(Option(entity.getOld))
       yield
         val newEntity = copy(entity, DocumentDeleteEntity[B])
         newEntity.setOld(oldValue.orNull)
@@ -65,10 +65,10 @@ object EntityMapper:
     private val oldRefField = getField("oldRev", classOf[DocumentUpdateEntity[_]])
     override def map[A, B, F[+_]: Effect](
         entity: DocumentUpdateEntity[A]
-    )(using Transformer[A, B], Null <:< B): F[DocumentUpdateEntity[B]] =
+    )(using FarangoTransformer[A, B], Null <:< B): F[DocumentUpdateEntity[B]] =
       for
-        oldValue <- Transformer[A, B].fromOption(Option(entity.getOld))
-        newValue <- Transformer[A, B].fromOption(Option(entity.getNew))
+        oldValue <- FarangoTransformer[A, B].fromOption(Option(entity.getOld))
+        newValue <- FarangoTransformer[A, B].fromOption(Option(entity.getNew))
       yield
         val newEntity = copy(entity, DocumentUpdateEntity[B])
         oldRefField.set(newEntity, entity.getOldRev)
