@@ -1,7 +1,9 @@
 package one.estrondo.farango
 
+import scala.annotation.implicitNotFound
 import scala.util.Try
 
+@implicitNotFound("There is no FarangoTransformer from ${A} to ${B}.")
 trait FarangoTransformer[A, B]:
 
   def fromOption[F[+_]: Effect](option: Option[A]): F[Option[B]] =

@@ -17,7 +17,7 @@ abstract class DBIntegrationSpec[F[+_]: Effect: EffectToFuture, S[_]](using
 
     "It should create the default user." in withDB(createUser = false) { db =>
       for entity <- db.createDefaultUser()
-      yield entity.getUser should be(db.config.user)
+      yield entity.getUser should be(db.config.user.get)
     }
   }
 
