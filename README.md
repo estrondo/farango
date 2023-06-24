@@ -6,11 +6,9 @@ A small Scala 3 wrapper for [ArangoDB](http://www.arangodb.com).
 
 So, I have been working on a project that utilises ArangoDB and [ZIO](http://www.zio.dev). I would like to use Arango due to its geographical index support. I'm enjoyng coding in functional fashion. Therefore, after some mess and some ideas I have decide to move all codes to an external library and publish it. So, it's the very beginning of this project and I have just done the basic set of features and functionalities to help me in my project. Any help such as ideas, features and fixes are welcome.
 
-
 ## Functional Programming
 
 Farango(_Functional Arango_) has built in support for [ZIO](http://www.zio.dev), [Cats Effect](https://typelevel.org/cats-effect), Scala's Future, Try and Either[Throwable, _] types.
-
 
 ## Overview
 
@@ -20,11 +18,11 @@ Add in your `build.sbt` one of the following dependencies:
 
 ```scala
 
-"one.estrondo.farango" %% "farango" % "0.1.0" // If you want to use just the Scala's types.
+"one.estrondo.farango" %% "farango" % "1.0.0" // If you want to use just the Scala's types.
 
-"one.estrondo.farango" %% "farango-zio" % "0.1.0" // If you want working with ZIO.
+"one.estrondo.farango" %% "farango-zio" % "1.0.0" // If you want working with ZIO.
 
-"one.estrondo.farango" %% "farango-cats-effect" % "0.1.1" // If you want Cats Effect.
+"one.estrondo.farango" %% "farango-cats-effect" % "1.0.0" // If you want Cats Effect.
 
 ```
 
@@ -54,7 +52,9 @@ val config = Config()
 
 ```
 
-After that it's time to have some fun, or at least attempt to do so. To create a Farango's DB version of Arango's DB you currently need to utilise the object `one.estrondo.farango.SyncDB`. Prior to version 7.x of ArangoDB Java Driver had `async` and `sync` clients. However, in the current version of ArangoDB Java Driver only supports a `sync` client, in their website they say the support to `async` will be re-added in a future version 7.x. Hence, Farango provides a `SyncDB` object which acts as a Factory for the `one.estrondo.farango.DB`.
+After that it's time to have some fun, or at least attempt to do so. To create a Farango's DB version of Arango's DB you currently need to utilise the object `one.estrondo.farango.SyncDB`. Prior to version 7.x ArangoDB Java Driver had `async` and `sync` clients. However, in the current version of ArangoDB Java Driver only supports a `sync` client, in their website they say the support to `async` will be re-added in a future version 7.x. Hence, Farango provides a `SyncDB` object which acts as a Factory for the `one.estrondo.farango.DB`.
+
+Let's remember one small thing, in ArangoDB Java Driver a DB instance represents not a specific database, but it represents the database server.
 
 ```scala
 
@@ -92,11 +92,9 @@ You are free to choice, or you could use the `scala.util.Try` directly or map it
 
 You had made your choice of which framework to use to build your application, let's see some examples.
 
-
 ### Creating a new user.
 
-Let's remember one small thing, in ArangoDB Java Driver an DB instance represents not a specific database, but it represents the database server. Now that we have our DB object, let's assume that we want to create a user on the database server. This can be accomplished with `createUser(user, password, options)` method. The parameter `options` is a [`UserCreateOptions`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/model/UserCreateOptions.html) and the result type is [`UserEntity`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/entity/UserEntity.html) both from ArangoDB Java Driver. Actually, the result type is a `F[UserEntity]`.
-
+Let's assume that we want to create a user on the database server. This can be accomplished with `createUser(user, password, options)` method. The parameter `options` is a [`UserCreateOptions`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/model/UserCreateOptions.html) and the result type is [`UserEntity`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/entity/UserEntity.html) both from ArangoDB Java Driver. Actually, the result type is a `F[UserEntity]`. The parameter `options` is optional.
 
 ```scala
 
@@ -106,9 +104,9 @@ yield entity.getUser
 
 ```
 
-IMPORTANT: For some operations Farango needs that you define in the Config object the property `rootPassword`, because in these situations Farango needs to connect using the `root` account.
+IMPORTANT: For some operations Farango needs that you define in the Config object the property `rootPassword`, because in these situations Farango needs to connect to the dabase server using the `root` account.
 
-### Creation or connecting to a database
+### Creating a database object.
 
 For this purpose you have to use the `DB.database(String | DBCreateOptions)` method, you can inform a database name for example:
 
@@ -120,13 +118,94 @@ for
 
 ```
 
-Or you can use a [`DBCreateOptions`](https://www.javadoc.io/static/com.arangodb/arangodb-java-driver/7.1.0/com/arangodb/model/DBCreateOptions.html) to create an instance of `one.estrondo.farango.Database`
+Or you can use a [`DBCreateOptions`](https://www.javadoc.io/static/com.arangodb/arangodb-java-driver/7.1.0/com/arangodb/model/DBCreateOptions.html) to create an instance of `one.estrondo.farango.Database`.
 
+```scala
+for
+  database <- db.database(
+                DBCreateOptions()
+                .name("test-database")
+                .options(DatabaseOptions().sharding("sharding"))
+              )
+  ...
+```
 
+### Creating a database on the database server.
 
+Creating a database on database server is straightforwad with Arango Java Driver. The same applies to the Farango. Simply utilise the `Database.create()` method. It is worth noting that Farango needs that `Config` object with a `rootPassword` defined.
 
+```scala
 
+for
+  database <- db.database("test-database")
+                .create()
+  ...
 
+```
 
+### Collections.
 
+Currently Farango only supports document collectons.To create a `one.estrondo.farango.Collection` you simply need to utilise the `database.collection(name, indexes, options)`method. Note that indexes is a `Seq[one.estrondo.farango.IndexDescription]` and options is a [`CollectionCreateOptions`](https://www.javadoc.io/static/com.arangodb/arangodb-java-driver/7.1.0/com/arangodb/model/CollectionCreateOptions.html). Both indexes and options are optional.
 
+```scala
+
+val indexes = Seq(IndexDescription.Geo(Seq("geom"), GeoIndexOptions().geoJson(true)))
+
+val collection = database
+                  .collection("collection-name", indexes)
+
+```
+
+### Creating a collection on the database server.
+
+As we did with our database, to create a collection on the database server you can utilise the `collection.create()` method.
+
+```scala
+
+for
+  collection <- database.collection("collection-name").create()
+  ...
+
+```
+
+## Mr. Data.
+
+Now we will go through how to create, read, update and delete our documents.
+
+Farango intends to help with something I usually do in my projects, the separation between the business layer and storage layer. To accomplish this Farango employs the mapping process, or transformig how it is called. Please, refer the [the following](#inserting-a-document) section to understand how Farango accomplishes this.
+
+### Inserting a document.
+
+Let's assume that we have a document in our business layer which is the type `T` and we want to represent this document in our storage layer with a type `A`. Furthermore, we want after inserting this document return a value of the type `R`. After this alphabet soup how could Farango help?
+
+Firstly we going to see how you could write this code, after we will show how to make it possible.
+
+Ir order to insert a document into the collection, you can use `collection.insertDocument` method.
+
+```scala
+
+for
+  entity <- collection.insertDocument[A, R](value) // The type of value is T.
+  ...
+
+```
+
+Is it simple, no? We have a method `insertDocument` which will receive a value of the type T, it will convert it to `A` and store it in the collection, after that it will return a entity that is the type [`DocumentCreateEntity[R]`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/entity/DocumentCreateEntity.html), it is worth noting that is a `DocumentCreateEntity` of `R`. So, how does Farango know to convert T -> A and A -> R?
+
+Givens! The method `insertDocument` is expecting for two `given` objects, `one.estrondo.farango.FarangoTransformer[T, A]` and `one.estrondo.farango.FarangoTransformer[A, R]`. You can provide your own given objects that implement this Typeclasse, it may feel rather uncomfortable to do so. Imagine an application with a bunch of types and and transformers, it is going to be a mess! There is where our friend [Ducktape](https://github.com/arainko/ducktape) comes to rescue, thanks Ducktape!
+
+#### Ducktape comes to assist us.
+
+Ducktape as the creators say is _"ducktape is a library for boilerplate-less and configurable transformations between case classes and enums/sealed traits for Scala 3. Directly inspired by chimney."_
+
+First add Farango's ducktape extension in your `build.sbt`.
+
+```scala
+
+libraryDependencies += "one.estrondo" %% "farango-ducktape" % "1.0.0"
+
+```
+
+After this you have some options to create your transformations.
+
+For the sake of this example let's assume you 

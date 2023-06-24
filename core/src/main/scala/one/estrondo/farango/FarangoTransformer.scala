@@ -20,3 +20,7 @@ object FarangoTransformer:
 
   inline def apply[A, B](using FarangoTransformer[A, B]): FarangoTransformer[A, B] =
     summon[FarangoTransformer[A, B]]
+
+  given [A]: FarangoTransformer[A, A] with
+
+    override def transform(value: A): A = value

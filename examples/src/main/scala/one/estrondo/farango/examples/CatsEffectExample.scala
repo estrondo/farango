@@ -1,5 +1,7 @@
 package one.estrondo.farango.examples
 
+import cats.effect.IO
+import cats.effect.IOApp
 import com.arangodb.model.DatabaseOptions
 import com.arangodb.model.DBCreateOptions
 import com.arangodb.model.DocumentCreateOptions
@@ -11,21 +13,16 @@ import java.time.LocalDateTime
 import one.estrondo.farango.Config
 import one.estrondo.farango.DB
 import one.estrondo.farango.IndexDescription
+import one.estrondo.farango.cats.effect.given
 import one.estrondo.farango.ducktape.given
 import one.estrondo.farango.sync.SyncDB
-import one.estrondo.farango.zio.given
 import scala.jdk.CollectionConverters.MapHasAsJava
-import zio.Scope
-import zio.Task
-import zio.ZIO
-import zio.ZIOAppArgs
-import zio.ZIOAppDefault
 
-object ZIOExample extends ZIOAppDefault:
+object CatsEffectExample extends IOApp.Simple:
 
   // podman run --rm -p 8529:8529 -e ARANGO_ROOT_PASSWORD=farango docker.io/library/arangodb:3.11.0
 
-  override def run: ZIO[ZIOAppArgs & Scope, Any, Any] =
+  override def run =
     val config = Config()
       .withUser("user")
       .withPassword("password")
@@ -33,7 +30,7 @@ object ZIOExample extends ZIOAppDefault:
       .addHost("localhost", 8529)
 
     for
-      db          <- ZIO.fromTry(SyncDB(config))
+      db          <- IO.fromTry(SyncDB(config))
       username    <- createUser(db)
       defaultUser <- createDefaultUser(db)
       database    <-
@@ -66,7 +63,8 @@ object ZIOExample extends ZIOAppDefault:
                       "id"          -> postIt.id
                     )
                   )
-                  .runCollect
+                  .compile
+                  .toList
       _       = assert(result == List(postIt))
 
       newLastUpdate = LocalDateTime.now()
@@ -86,10 +84,10 @@ object ZIOExample extends ZIOAppDefault:
       _             = assert(deleteEntity.getOld == DeletedPostIt(postIt.id, "New Content", newLastUpdate))
     yield ()
 
-  private def createUser(db: DB): Task[String] =
+  private def createUser(db: DB): IO[String] =
     for entity <-
         db.createUser("username", "password", UserCreateOptions().extra(Map("any-property-you-want" -> 1.0).asJava))
     yield entity.getUser
 
-  private def createDefaultUser(db: DB): Task[String] =
+  private def createDefaultUser(db: DB): IO[String] =
     db.createDefaultUser().map(_.getUser)
