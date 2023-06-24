@@ -63,9 +63,8 @@ trait PartialInsertDocument[A, R] extends Composed:
 trait PartialUpdateDocument[A, U, R] extends Composed:
 
   def apply[T, F[+_]: Effect](key: String, value: T, options: DocumentUpdateOptions = DocumentUpdateOptions())(using
-      FarangoTransformer[T, U],
-      FarangoTransformer[A, R]
-  )(using
+      FarangoTransformer[T, U]
+  )(using FarangoTransformer[A, R])(using
       EntityMapper[DocumentUpdateEntity],
       ClassTag[A],
       Null <:< R
