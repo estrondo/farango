@@ -9,6 +9,7 @@ import one.estrondo.farango.ConfigBuilder
 import one.estrondo.farango.DB
 import scala.util.Try
 
+/** Synchronous Arango Driver. */
 trait SyncDB extends DB, SyncComposed:
 
   override type DatabaseRep = SyncDatabase
@@ -16,6 +17,7 @@ trait SyncDB extends DB, SyncComposed:
 
   def root: Try[ArangoDB]
 
+/** SyncDB's Factory. */
 object SyncDB:
 
   def apply(config: Config)(using ConfigBuilder[ArangoDB]): Try[SyncDB] =

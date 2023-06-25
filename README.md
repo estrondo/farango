@@ -2,6 +2,10 @@
 
 A small Functional Scala 3 wrapper for [ArangoDB](http://www.arangodb.com).
 
+| Scaladex   | Scaladoc   |  Maven  |
+| :--------: | :--------: | :-----: |
+| [![farango Scala version support](https://index.scala-lang.org/estrondo/farango/farango/latest.svg)](https://index.scala-lang.org/estrondo/farango/farango) |  [![javadoc](https://javadoc.io/badge2/one.estrondo/farango_3/javadoc.svg)](https://javadoc.io/doc/one.estrondo/farango_3)  | ![Maven Central](https://img.shields.io/maven-central/v/one.estrondo/farango_3) |
+
 ## Why?
 
 So, I have been working on a project that utilises ArangoDB and [ZIO](http://www.zio.dev). I would like to use Arango due to its geographical index support. I'm enjoyng coding in functional fashion. Therefore, after some mess and some ideas I have decide to move all codes to an external library and publish it. So, it's the very beginning of this project and I have just done the basic set of features and functionalities to help me in my project. Any help such as ideas, features and fixes are welcome.

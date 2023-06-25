@@ -16,6 +16,9 @@ import javax.net.ssl.SSLContext
 import scala.util.Failure
 import scala.util.Try
 
+/** Configuration used by Farango to connect to a Database Server. If you need to create database objects such as the
+  * database and collections you need to inform the rootPassword configuration.
+  */
 case class Config(
     hosts: Seq[HostDescription] = Vector.empty,
     protocol: Option[Protocol] = None,

@@ -1,6 +1,6 @@
 ThisBuild / organization := "one.estrondo"
 ThisBuild / scalaVersion := "3.3.0"
-ThisBuild / version      := "0.0.0-SNAPSHOT"
+ThisBuild / version      := "0.0.1"
 ThisBuild / Test / fork  := true
 
 ThisBuild / scalacOptions ++= Seq(
@@ -10,6 +10,9 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-feature"
 )
+
+ThisBuild / autoAPIMappings := true
+ThisBuild / apiURL          := Some(url("https://javadoc.io/doc"))
 
 lazy val root = (project in file("."))
   .settings(
@@ -29,7 +32,8 @@ lazy val root = (project in file("."))
 
 lazy val core = (project in file("core"))
   .settings(
-    name := "farango",
+    name      := "farango",
+    publishTo := sonatypePublishToBundle.value,
     libraryDependencies ++= Seq(
       Dependencies.ArangoDBDriver,
       Dependencies.JacksonScalaModule,
@@ -41,7 +45,8 @@ lazy val core = (project in file("core"))
 
 lazy val it = (project in file("it"))
   .settings(
-    name := "farango-it-test",
+    name           := "farango-it-test",
+    publish / skip := true,
     libraryDependencies ++= Seq(
       Dependencies.TestcontainersScala,
       Dependencies.Logging,
@@ -54,7 +59,8 @@ lazy val it = (project in file("it"))
 
 lazy val zio = (project in file("zio"))
   .settings(
-    name := "farango-zio",
+    name      := "farango-zio",
+    publishTo := sonatypePublishToBundle.value,
     libraryDependencies ++= Seq(
       Dependencies.ZIO
     ).flatten
@@ -66,7 +72,8 @@ lazy val zio = (project in file("zio"))
 
 lazy val catsEffect = (project in file("cats-effect"))
   .settings(
-    name := "farango-cats-effect",
+    name      := "farango-cats-effect",
+    publishTo := sonatypePublishToBundle.value,
     libraryDependencies ++= Seq(
       Dependencies.CatsEffect
     ).flatten
@@ -78,7 +85,8 @@ lazy val catsEffect = (project in file("cats-effect"))
 
 lazy val zioIt = (project in file("zio-it"))
   .settings(
-    name := "farango-zio-it"
+    name           := "farango-zio-it",
+    publish / skip := true
   )
   .dependsOn(
     zio,
@@ -88,7 +96,8 @@ lazy val zioIt = (project in file("zio-it"))
 
 lazy val ducktape = (project in file("ducktape"))
   .settings(
-    name := "farango-ducktape",
+    name      := "farango-ducktape",
+    publishTo := sonatypePublishToBundle.value,
     libraryDependencies ++= Seq(
       Dependencies.DuckTape
     ).flatten
@@ -100,7 +109,8 @@ lazy val ducktape = (project in file("ducktape"))
 
 lazy val catsEffectIt = (project in file("cats-effect-it"))
   .settings(
-    name := "farango-cats-effect-it"
+    name           := "farango-cats-effect-it",
+    publish / skip := true
   )
   .dependsOn(
     catsEffect,

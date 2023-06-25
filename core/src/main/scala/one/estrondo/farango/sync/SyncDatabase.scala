@@ -13,6 +13,7 @@ import one.estrondo.farango.entity.Copy
 import one.estrondo.farango.sync.database.SyncPartialQuery
 import scala.util.Try
 
+/** Synchronous Database. */
 trait SyncDatabase extends Database, SyncComposed:
 
   override type DatabaseRep = SyncDatabase
@@ -23,6 +24,7 @@ trait SyncDatabase extends Database, SyncComposed:
 
   def name: String
 
+  /** It returns a ArangoDatabase with root user. */
   def root: Try[ArangoDatabase]
 
 object SyncDatabase:
