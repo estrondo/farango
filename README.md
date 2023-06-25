@@ -1,6 +1,6 @@
 # Farango
 
-A small Scala 3 wrapper for [ArangoDB](http://www.arangodb.com).
+A small Functional Scala 3 wrapper for [ArangoDB](http://www.arangodb.com).
 
 ## Why?
 
@@ -37,6 +37,10 @@ import one.estrondo.farango.zio.given // If you are using ZIO.
 import one.estrondo.farango.cats.effect.given // it you are using Cats Effect.
 
 ```
+
+### Examples
+
+All examples mentioned above could be found on [ZIO example](https://github.com/estrondo/farango/blob/main/examples/src/main/scala/one/estrondo/farango/examples/ZIOExample.scala) and [Cats Effect example](https://github.com/estrondo/farango/blob/main/examples/src/main/scala/one/estrondo/farango/examples/CatsEffectExample.scala).
 
 ### Creating a DB instance.
 
@@ -172,15 +176,13 @@ for
 
 Now we will go through how to create, read, update and delete our documents.
 
-Farango intends to help with something I usually do in my projects, the separation between the business layer and storage layer. To accomplish this Farango employs the mapping process, or transformig how it is called. Please, refer the [the following](#inserting-a-document) section to understand how Farango accomplishes this.
+Farango aims to help with separation between the business layer and storage layer. To accomplish this Farango employs the mapping process, or transformation. Please, refer the [the following](#inserting-a-document) section to understand how Farango accomplishes this.
 
 ### Inserting a document.
 
-Let's assume that we have a document in our business layer which is the type `T` and we want to represent this document in our storage layer with a type `A`. Furthermore, we want after inserting this document return a value of the type `R`. After this alphabet soup how could Farango help?
+Let's assume we have a document in our business layer which of the type `T`, and we want to represent this document in our storage layer as type `A`. Furthermore, we want after inserting this document return it as type `R`.
 
-Firstly we going to see how you could write this code, after we will show how to make it possible.
-
-Ir order to insert a document into the collection, you can use `collection.insertDocument` method.
+To insert a document into the collection, you can use `collection.insertDocument` method.
 
 ```scala
 
@@ -190,11 +192,11 @@ for
 
 ```
 
-Is it simple, no? We have a method `insertDocument` which will receive a value of the type T, it will convert it to `A` and store it in the collection, after that it will return a entity that is the type [`DocumentCreateEntity[R]`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/entity/DocumentCreateEntity.html), it is worth noting that is a `DocumentCreateEntity` of `R`. So, how does Farango know to convert T -> A and A -> R?
+The method `insertDocument` will receive a value of the type T, and it will convert to `A` and store it in the collection. After that it will return a entity that is the type [`DocumentCreateEntity[R]`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/entity/DocumentCreateEntity.html), it is worth noting that is a `DocumentCreateEntity` of `R`.
 
-Givens! The method `insertDocument` is expecting for two `given` objects, `one.estrondo.farango.FarangoTransformer[T, A]` and `one.estrondo.farango.FarangoTransformer[A, R]`. You can provide your own given objects that implement this Typeclasse, it may feel rather uncomfortable to do so. Imagine an application with a bunch of types and and transformers, it is going to be a mess! There is where our friend [Ducktape](https://github.com/arainko/ducktape) comes to rescue, thanks Ducktape!
+The method `insertDocument` is expecting for two `given` objects, `one.estrondo.farango.FarangoTransformer[T, A]` and `one.estrondo.farango.FarangoTransformer[A, R]`. You can provide your own given objects that implement this Typeclasse, it may feel rather uncomfortable to do so. Imagine an application with a bunch of types and and transformers, it is going to be a mess! There is where our friend [Ducktape](https://github.com/arainko/ducktape) comes to rescue, thanks Ducktape!
 
-#### Ducktape comes to assist us.
+### Ducktape comes to assist us.
 
 Ducktape as the creators say is _"ducktape is a library for boilerplate-less and configurable transformations between case classes and enums/sealed traits for Scala 3. Directly inspired by chimney."_
 
@@ -206,6 +208,167 @@ libraryDependencies += "one.estrondo" %% "farango-ducktape" % "1.0.0"
 
 ```
 
-After this you have some options to create your transformations.
+Once you have added Farango's ducktape extension to your build you can use it in two basic ways. First one, you can import `one.estrondo.farango.ducktape.given` and where Farango needs a `FarangoTransformer` one `given` object will be provided automatically, but it is worth an attention. Farango utilises ducktape to generate a `Transformer`, so please refer to the [ducktape documention](https://github.com/arainko/ducktape#1-case-class-to-case-class).
 
-For the sake of this example let's assume you 
+Let's have a look at an example:
+
+```scala
+
+import one.estrondo.farango.ducktape.given
+
+val postIt = PostIt("My Post-it")
+
+for
+  createEntity <- collection
+                    .insertDocument[StoredPostIt, CreatedPostIt](postIt)
+  ...
+
+```
+
+In the example above we are inserting a document of type `PostIt`, it will be transformed into a `StoredPostIt` automatically and after that the `StoredPostIt` value from collection will be transformed into a `CreatedPostIt` as well.
+
+So, if you require more control or it is impossible to create an automatic transformer, you can configure a new one using the object `one.estrondo.farango.ducktape.DucktapeTransformer`. Please, read [ducktape's documentation](https://github.com/arainko/ducktape#3-case-class-to-case-class-with-config) to be introduced.
+
+An example configuring a new Transformer.
+
+```scala
+
+import one.estrondo.farango.ducktape.DucktapeTransformer
+
+val applePostIt = ApplePostIt("My Post-it too.")
+
+given FarangoTransformer[ApplePostIt, StoredPostIt] = DucktapeTransformer[ApplePostIt, StoredPostIt](
+  Field.renamed(_.id, _.ID)
+)
+
+for
+  createEntity <- collection
+                    .insertDocument[StoredPostIt, CreatedPostIt](applePostIt)
+
+  ...
+
+```
+
+In the example above we are receiving a `ApplePostIt` document which has an attribute 'ID' instead 'id' as in `StoredPostIt`, because of this ducktape can't create an automatic transformer. Hence, we have to provide one semi-automatic transformer, in the example we simply inform ducktape that the attribute 'ID' in `ApplePostIt` was renamed as 'id' in `StoredPostIt`.
+
+### Getting a document.
+
+Example.
+
+```scala
+
+for
+  getPostIt <- collection.getDocument[StoredPostIt, PostIt](key) // It returns a F[Option[PostIt]]
+
+  ...
+
+```
+
+### Querying documents.
+
+Farango returns all queries as Streams.
+
+#### Querying with ZIO.
+
+Farango returns a `zio.stream.ZStream[Any, Throwable, R]`.
+
+```scala
+
+import one.estrondo.farango.zio.given
+
+for
+  result <- database
+              .query[StoredPostIt, PostIt](
+                "FOR postIt IN @@collection FILTER postIt.id == @id RETURN postIt",
+                Map(
+                  "@collection" -> "collection",
+                  "id"          -> postIt.id
+                )
+              )
+              .runCollect
+
+  ...
+
+```
+
+In the example above Farango returns a `ZStream[Any, Throwable, PostIt]`, note we collecting all objects for the example's sake.
+
+#### Querying with Cats Effect.
+
+Farango returns a `fs2.Stream[IO, R]`.
+
+```scala
+
+import one.estrondo.farango.cats.effect.given
+
+for
+  result <- database
+              .query[StoredPostIt, PostIt](
+                "FOR postIt IN @@collection FILTER postIt.id == @id RETURN postIt",
+                Map(
+                  "@collection" -> "collection",
+                  "id"          -> postIt.id
+                )
+              )
+              .compile
+              .toList
+
+  ...
+
+```
+
+In the example above Farango returns a `fs2.Stream[IO, PostIt]`, note we are converting the stream to a list for the example's sake.
+
+### Updating documents.
+
+Let's have a look at an example:
+
+```scala
+
+val postIt = PostIt("My Post-it")
+val newLastUpdate = LocalDateTime.now()
+
+for
+  updateEntity <- collection.updateDocument[StoredPostIt, UpdateContent, UpdatedPostIt](
+                    documentKey,
+                    postIt.copy(content = "New Content", lastUpdate = newLastUpdate),
+                    DocumentUpdateOptions()
+                      .returnOld(true)
+                      .returnNew(true)
+                  )
+
+  _ = assert(updateEntity.getOld == UpdatedPostIt(postIt.id, "My Post-it"))
+  _ = assert(updateEntity.getNew == UpdatedPostIt(postIt.id, "New Content"))
+
+  ...
+
+```
+
+It the example above Farango transforms a `PostIt` into `UpdateContent` and partially updating the document in the collection, see [ArangoDB Java Driver documentation](<https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/ArangoCollection.html#updateDocument(java.lang.String,java.lang.Object,com.arangodb.model.DocumentUpdateOptions,java.lang.Class)>).
+
+### Deleting documents.
+
+Example:
+
+```scala
+
+val postIt = PostIt("My Post-it")
+val newLastUpdate = LocalDateTime.now()
+
+// document was updated.
+
+for
+  deleteEntity <- collection.deleteDocument[StoredPostIt, DeletedPostIt](
+                    documentEntity,
+                    DocumentDeleteOptions().returnOld(true)
+                  )
+
+  _ = assert(deleteEntity.getOld == DeletedPostIt(postIt.id, "New Content", newLastUpdate))
+
+  ...
+
+```
+
+## Contributions
+
+Farango is in its early stages, for example it currently supports only document collections, there is no support for edge collections and there are many functionalities that Arango's Java Driver provides which are not covered yet by Farango. If you belive this project could be helpfull and you would like to contribute, your help is more than welcome.

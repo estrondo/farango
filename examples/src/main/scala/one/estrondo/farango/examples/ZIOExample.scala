@@ -52,8 +52,11 @@ object ZIOExample extends ZIOAppDefault:
                             .returnNew(true)
                         )
       _             = assert(createEntity.getOld == null)
-      _             = assert(createEntity.getNew == CreatedPostIt(postIt.id, postIt.lastUpdate))
+      _             = assert(createEntity.getNew == CreatedPostIt(postIt.id))
       generatedKey  = createEntity.getKey
+
+      applePostIt        = ApplePostIt("My Post-it too.")
+      appleCreateEntity <- collection.insertDocument[StoredPostIt, CreatedPostIt](applePostIt)
 
       getPostIt <- collection.getDocument[StoredPostIt, PostIt](generatedKey)
       _          = assert(getPostIt == Some(postIt))
@@ -72,17 +75,19 @@ object ZIOExample extends ZIOAppDefault:
       newLastUpdate = LocalDateTime.now()
       updateEntity <- collection.updateDocument[StoredPostIt, UpdateContent, UpdatedPostIt](
                         generatedKey,
-                        UpdateContent("New Content", newLastUpdate),
+                        postIt.copy(content = "New Content", lastUpdate = newLastUpdate),
                         DocumentUpdateOptions()
                           .returnOld(true)
                           .returnNew(true)
                       )
 
-      _ = assert(updateEntity.getOld == UpdatedPostIt(postIt.id, postIt.lastUpdate))
-      _ = assert(updateEntity.getNew == UpdatedPostIt(postIt.id, newLastUpdate))
+      _ = assert(updateEntity.getOld == UpdatedPostIt(postIt.id, "My Post-it"))
+      _ = assert(updateEntity.getNew == UpdatedPostIt(postIt.id, "New Content"))
 
-      deleteEntity <-
-        collection.deleteDocument[StoredPostIt, DeletedPostIt](generatedKey, DocumentDeleteOptions().returnOld(true))
+      deleteEntity <- collection.deleteDocument[StoredPostIt, DeletedPostIt](
+                        generatedKey,
+                        DocumentDeleteOptions().returnOld(true)
+                      )
       _             = assert(deleteEntity.getOld == DeletedPostIt(postIt.id, "New Content", newLastUpdate))
     yield ()
 

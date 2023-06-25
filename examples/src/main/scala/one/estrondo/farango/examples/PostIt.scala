@@ -8,28 +8,34 @@ import one.estrondo.farango.ducktape.DucktapeTransformer
 
 case class PostIt(id: String, content: String, lastUpdate: LocalDateTime)
 
+case class ApplePostIt(ID: String, content: String, lastUpdate: LocalDateTime)
+
 case class StoredPostIt(id: String, content: String, lastUpdate: LocalDateTime)
 
-case class CreatedPostIt(id: String, createdAt: LocalDateTime)
+case class CreatedPostIt(id: String)
 
 case class UpdateContent(content: String, lastUpdate: LocalDateTime)
 
-case class UpdatedPostIt(id: String, updatedAt: LocalDateTime)
+case class UpdatedPostIt(id: String, content: String)
 
 case class DeletedPostIt(id: String, content: String, lastUpdate: LocalDateTime)
 
-given FarangoTransformer[StoredPostIt, UpdatedPostIt] = DucktapeTransformer(
-  Field.renamed(_.updatedAt, _.lastUpdate)
-)
-
-given FarangoTransformer[StoredPostIt, CreatedPostIt] = DucktapeTransformer(
-  Field.renamed(_.createdAt, _.lastUpdate)
+given FarangoTransformer[ApplePostIt, StoredPostIt] = DucktapeTransformer[ApplePostIt, StoredPostIt](
+  Field.renamed(_.id, _.ID)
 )
 
 object PostIt:
 
   def apply(content: String): PostIt = PostIt(
     id = UUID.randomUUID().toString,
+    content = content,
+    lastUpdate = LocalDateTime.now()
+  )
+
+object ApplePostIt:
+
+  def apply(content: String): ApplePostIt = ApplePostIt(
+    ID = UUID.randomUUID().toString,
     content = content,
     lastUpdate = LocalDateTime.now()
   )
