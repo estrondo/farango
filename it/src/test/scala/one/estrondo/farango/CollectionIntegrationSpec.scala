@@ -1,8 +1,15 @@
 package one.estrondo.farango
 
+import com.arangodb.entity.InvertedIndexField
 import com.arangodb.model.DocumentCreateOptions
 import com.arangodb.model.DocumentDeleteOptions
 import com.arangodb.model.DocumentUpdateOptions
+import com.arangodb.model.FulltextIndexOptions
+import com.arangodb.model.GeoIndexOptions
+import com.arangodb.model.InvertedIndexOptions
+import com.arangodb.model.PersistentIndexOptions
+import com.arangodb.model.TtlIndexOptions
+import com.arangodb.model.ZKDIndexOptions
 import one.estrondo.farango.test.domain.DomainDocument
 import one.estrondo.farango.test.domain.DomainDocumentFixture
 import one.estrondo.farango.test.domain.KeyDocument
@@ -82,6 +89,28 @@ abstract class CollectionIntegrationSpec[F[+_]: Effect: EffectToFuture, S[_]](us
         entity.getOld should be(originalDocument)
         updated should contain(expectedDocument)
 
+    }
+
+    "It should create a collection with indexes." in withDatabase() { database =>
+      val collection = database.collection(
+        "test-collection",
+        Seq(
+          IndexDescription.Geo(Seq("geo-field"), GeoIndexOptions().geoJson(true)),
+          IndexDescription.Fulltext(Seq("fulltext-field"), FulltextIndexOptions().inBackground(true)),
+          IndexDescription.Ttl(Seq("ttl-field"), TtlIndexOptions().expireAfter(500)),
+          IndexDescription.ZKD(
+            Seq("zkd-field"),
+            ZKDIndexOptions().inBackground(true).fieldValueTypes(ZKDIndexOptions.FieldValueTypes.DOUBLE)
+          ),
+          IndexDescription.Persistent(Seq("persistent-field"), PersistentIndexOptions().sparse(true)),
+          IndexDescription.Inverted(
+            InvertedIndexOptions().fields(InvertedIndexField().name("inverted-field")).inBackground(true)
+          )
+        )
+      )
+
+      for result <- collection.create()
+      yield result should be(collection)
     }
   }
 
