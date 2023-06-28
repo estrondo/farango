@@ -8,7 +8,7 @@ A small Functional Scala 3 wrapper for [ArangoDB](http://www.arangodb.com).
 
 ## Why?
 
-So, I have been working on a project that utilises ArangoDB and [ZIO](http://www.zio.dev). I would like to use Arango due to its geographical index support. I'm enjoyng coding in functional fashion. Therefore, after some mess and some ideas I have decide to move all codes to an external library and publish it. So, it's the very beginning of this project and I have just done the basic set of features and functionalities to help me in my project. Any help such as ideas, features and fixes are welcome.
+So, I have been working on a project that utilises ArangoDB and [ZIO](http://www.zio.dev). I would like to use Arango due to its geographical index support. I'm enjoying coding in functional fashion. Therefore, after some mess and some ideas I have decide to move all codes to an external library and publish it. So, it's the very beginning of this project and I have just done the basic set of features and functionalities to help me in my project. Any help such as ideas, features and fixes are welcome.
 
 ## Functional Programming
 
@@ -22,15 +22,15 @@ Add in your `build.sbt` one of the following dependencies:
 
 ```scala
 
-"one.estrondo.farango" %% "farango" % "1.0.0" // If you want to use just the Scala's types.
+"one.estrondo.farango" %% "farango" % "0.0.1" // If you want to use just the Scala's types.
 
-"one.estrondo.farango" %% "farango-zio" % "1.0.0" // If you want working with ZIO.
+"one.estrondo.farango" %% "farango-zio" % "0.0.1" // If you want working with ZIO.
 
-"one.estrondo.farango" %% "farango-cats-effect" % "1.0.0" // If you want Cats Effect.
+"one.estrondo.farango" %% "farango-cats-effect" % "0.0.1" // If you want Cats Effect.
 
 ```
 
-Farango was written with functional programming style kept in mind. Therefore, it uses the fammous Effectfull type `F[_]`. In order to use Farango you have to make some imports in your code.
+Farango was written with functional programming style kept in mind. Therefore, it uses the famous Effectfull type `F[_]`. In order to use Farango you have to make some imports in your code.
 
 ```scala
 
@@ -96,7 +96,7 @@ val db = Future.fromTry(SyncDB(config))
 
 ```
 
-You are free to choice, or you could use the `scala.util.Try` directly or map it to a `scala.util.Either` object.
+You are free to choose, or you could use the `scala.util.Try` directly or map it to a `scala.util.Either` object.
 
 You had made your choice of which framework to use to build your application, let's see some examples.
 
@@ -112,7 +112,7 @@ yield entity.getUser
 
 ```
 
-IMPORTANT: For some operations Farango needs that you define in the Config object the property `rootPassword`, because in these situations Farango needs to connect to the dabase server using the `root` account.
+IMPORTANT: For some operations Farango needs that you define in the Config object the property `rootPassword`, because in these situations Farango needs to connect to the database server using the `root` account.
 
 ### Creating a database object.
 
@@ -140,7 +140,7 @@ for
 
 ### Creating a database on the database server.
 
-Creating a database on database server is straightforwad with Arango Java Driver. The same applies to the Farango. Simply utilise the `Database.create()` method. It is worth noting that Farango needs that `Config` object with a `rootPassword` defined.
+Creating a database on database server is straightforward with Arango Java Driver. The same applies to the Farango. Simply utilise the `Database.create()` method. It is worth noting that Farango needs that `Config` object with a `rootPassword` defined.
 
 ```scala
 
@@ -153,7 +153,7 @@ for
 
 ### Collections.
 
-Currently Farango only supports document collectons.To create a `one.estrondo.farango.Collection` you simply need to utilise the `database.collection(name, indexes, options)`method. Note that indexes is a `Seq[one.estrondo.farango.IndexDescription]` and options is a [`CollectionCreateOptions`](https://www.javadoc.io/static/com.arangodb/arangodb-java-driver/7.1.0/com/arangodb/model/CollectionCreateOptions.html). Both indexes and options are optional.
+Currently Farango only supports document collections.To create a `one.estrondo.farango.Collection` you simply need to utilise the `database.collection(name, indexes, options)`method. Note that indexes is a `Seq[one.estrondo.farango.IndexDescription]` and options is a [`CollectionCreateOptions`](https://www.javadoc.io/static/com.arangodb/arangodb-java-driver/7.1.0/com/arangodb/model/CollectionCreateOptions.html). Both indexes and options are optional.
 
 ```scala
 
@@ -176,11 +176,11 @@ for
 
 ```
 
-## Mr. Data.
+## Mr Data.
 
 Now we will go through how to create, read, update and delete our documents.
 
-Farango aims to help with separation between the business layer and storage layer. To accomplish this Farango employs the mapping process, or transformation. Please, refer the [the following](#inserting-a-document) section to understand how Farango accomplishes this.
+Farango aims to help with the separation between the business layer and the storage layer. To accomplish this Farango employs the mapping process, or transformation. Please, refer the [the following](#inserting-a-document) section to understand how Farango accomplishes this.
 
 ### Inserting a document.
 
@@ -198,7 +198,7 @@ for
 
 The method `insertDocument` will receive a value of the type T, and it will convert to `A` and store it in the collection. After that it will return a entity that is the type [`DocumentCreateEntity[R]`](https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/entity/DocumentCreateEntity.html), it is worth noting that is a `DocumentCreateEntity` of `R`.
 
-The method `insertDocument` is expecting for two `given` objects, `one.estrondo.farango.FarangoTransformer[T, A]` and `one.estrondo.farango.FarangoTransformer[A, R]`. You can provide your own given objects that implement this Typeclasse, it may feel rather uncomfortable to do so. Imagine an application with a bunch of types and and transformers, it is going to be a mess! There is where our friend [Ducktape](https://github.com/arainko/ducktape) comes to rescue, thanks Ducktape!
+The method `insertDocument` is expecting for two `given` objects, `one.estrondo.farango.FarangoTransformer[T, A]` and `one.estrondo.farango.FarangoTransformer[A, R]`. You can provide your own given objects that implement this Typeclasse, it may feel rather uncomfortable to do so. Imagine an application with a bunch of types and transformers, it is going to be a mess! There is where our friend [Ducktape](https://github.com/arainko/ducktape) comes to rescue, thanks Ducktape!
 
 ### Ducktape comes to assist us.
 
@@ -208,11 +208,11 @@ First add Farango's ducktape extension in your `build.sbt`.
 
 ```scala
 
-libraryDependencies += "one.estrondo" %% "farango-ducktape" % "1.0.0"
+libraryDependencies += "one.estrondo" %% "farango-ducktape" % "0.0.1"
 
 ```
 
-Once you have added Farango's ducktape extension to your build you can use it in two basic ways. First one, you can import `one.estrondo.farango.ducktape.given` and where Farango needs a `FarangoTransformer` one `given` object will be provided automatically, but it is worth an attention. Farango utilises ducktape to generate a `Transformer`, so please refer to the [ducktape documention](https://github.com/arainko/ducktape#1-case-class-to-case-class).
+Once you have added Farango's ducktape extension to your build you can use it in two basic ways. First, you can import `one.estrondo.farango.ducktape.given` and where Farango needs a `FarangoTransformer` one `given` object will be provided automatically, but it is worth attention. Farango utilises ducktape to generate a `Transformer`, so please refer to the [ducktape documention](https://github.com/arainko/ducktape#1-case-class-to-case-class).
 
 Let's have a look at an example:
 
@@ -229,7 +229,7 @@ for
 
 ```
 
-In the example above we are inserting a document of type `PostIt`, it will be transformed into a `StoredPostIt` automatically and after that the `StoredPostIt` value from collection will be transformed into a `CreatedPostIt` as well.
+In the example above we are inserting a document of type `PostIt`, it will be transformed into a `StoredPostIt` automatically and after that the `StoredPostIt` value from the collection will be transformed into a `CreatedPostIt` as well.
 
 So, if you require more control or it is impossible to create an automatic transformer, you can configure a new one using the object `one.estrondo.farango.ducktape.DucktapeTransformer`. Please, read [ducktape's documentation](https://github.com/arainko/ducktape#3-case-class-to-case-class-with-config) to be introduced.
 
@@ -253,7 +253,7 @@ for
 
 ```
 
-In the example above we are receiving a `ApplePostIt` document which has an attribute 'ID' instead 'id' as in `StoredPostIt`, because of this ducktape can't create an automatic transformer. Hence, we have to provide one semi-automatic transformer, in the example we simply inform ducktape that the attribute 'ID' in `ApplePostIt` was renamed as 'id' in `StoredPostIt`.
+In the example above we are receiving an `ApplePostIt` document which has an attribute 'ID' instead 'id' as in `StoredPostIt`, because of this ducktape can't create an automatic transformer. Hence, we have to provide one semi-automatic transformer, in the example we simply inform ducktape that the attribute 'ID' in `ApplePostIt` was renamed as 'id' in `StoredPostIt`.
 
 ### Getting a document.
 
@@ -348,7 +348,7 @@ for
 
 ```
 
-It the example above Farango transforms a `PostIt` into `UpdateContent` and partially updating the document in the collection, see [ArangoDB Java Driver documentation](<https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/ArangoCollection.html#updateDocument(java.lang.String,java.lang.Object,com.arangodb.model.DocumentUpdateOptions,java.lang.Class)>).
+In the example above Farango transforms a `PostIt` into `UpdateContent` and partially updating the document in the collection, see [ArangoDB Java Driver documentation](<https://www.javadoc.io/doc/com.arangodb/arangodb-java-driver/latest/com/arangodb/ArangoCollection.html#updateDocument(java.lang.String,java.lang.Object,com.arangodb.model.DocumentUpdateOptions,java.lang.Class)>).
 
 ### Deleting documents.
 
@@ -375,4 +375,4 @@ for
 
 ## Contributions
 
-Farango is in its early stages, for example it currently supports only document collections, there is no support for edge collections and there are many functionalities that Arango's Java Driver provides which are not covered yet by Farango. If you belive this project could be helpfull and you would like to contribute, your help is more than welcome.
+Farango is in its early stages, for example, it currently supports only document collections, there is no support for edge collections and there are many functionalities that Arango's Java Driver provides which are not covered yet by Farango. If you believe this project could be helpful and you would like to contribute, your help is more than welcome.
