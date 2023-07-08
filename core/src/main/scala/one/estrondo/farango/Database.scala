@@ -10,6 +10,11 @@ trait Database extends Composed:
 
   type CollectionRep <: Collection
 
+  def name: String
+
+  def exists[F[_]: Effect]: F[Boolean] =
+    blockingCompose(_exists)
+
   /** It creates the database on the database server. */
   def create[F[_]: Effect](): F[DatabaseRep] =
     compose(_create())
@@ -25,3 +30,5 @@ trait Database extends Composed:
   def query[A, R]: PartialQuery[A, R]
 
   protected def _create(): G[DatabaseRep]
+
+  protected def _exists: G[Boolean]

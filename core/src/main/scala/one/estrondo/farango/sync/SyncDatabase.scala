@@ -22,8 +22,6 @@ trait SyncDatabase extends Database, SyncComposed:
 
   def arango: ArangoDatabase
 
-  def name: String
-
   /** It returns a ArangoDatabase with root user. */
   def root: Try[ArangoDatabase]
 
@@ -43,6 +41,9 @@ object SyncDatabase:
     ): SyncCollection = SyncCollection(this, name, indexes, options)
 
     override def query[S, R]: PartialQuery[S, R] = SyncPartialQuery(arango)
+
+    override protected def _exists: Try[Boolean] =
+      for root <- this.root yield root.exists()
 
     override def root: Try[ArangoDatabase] =
       for root <- db.root yield root.db(name)

@@ -10,7 +10,12 @@ trait Collection extends Composed:
 
   type CollectionRep <: Collection
 
+  def name: String
+
   def database: Database
+
+  def exists[F[_]: Effect]: F[Boolean] =
+    blockingCompose(_exists)
 
   /** It creates the collection on the database server. */
   def create[F[_]: Effect](): F[CollectionRep] =
@@ -56,3 +61,5 @@ trait Collection extends Composed:
   def updateDocument[A, U, R]: PartialUpdateDocument[A, U, R]
 
   protected def _create(): G[CollectionRep]
+
+  protected def _exists: G[Boolean]

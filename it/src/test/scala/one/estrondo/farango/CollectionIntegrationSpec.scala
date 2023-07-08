@@ -112,6 +112,15 @@ abstract class CollectionIntegrationSpec[F[+_]: Effect: EffectToFuture, S[_]](us
       for result <- collection.create()
       yield result should be(collection)
     }
+
+    "It should provides a method .exists when the collection exists." in withCollection() { collection =>
+      for exists <- collection.exists yield exists should be(true)
+    }
+
+    "It should provides a method .exists when the collection does not exist." in withCollection(create = false) {
+      collection =>
+        for exists <- collection.exists yield exists should be(false)
+    }
   }
 
 abstract class SyncCollectionIntegrationSpec[F[+_]: Effect: EffectToFuture, S[_]](using

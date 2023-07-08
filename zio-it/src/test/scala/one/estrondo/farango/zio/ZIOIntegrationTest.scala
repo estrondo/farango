@@ -1,6 +1,7 @@
 package one.estrondo.farango.zio
 
 import one.estrondo.farango.SyncCollectionIntegrationSpec
+import one.estrondo.farango.SyncDatabaseIntegrationSpec
 import one.estrondo.farango.SyncDBIntegrationSpec
 import zio.Task
 import zio.stream.ZStream
@@ -10,3 +11,5 @@ class SyncDBIntegrationSpecWithZIO extends SyncDBIntegrationSpec[Task, [A] =>> Z
 
 class SyncCollectionIntegrationSpecWithZIO
     extends SyncCollectionIntegrationSpec[Task, [A] =>> ZStream[Any, Throwable, A]]
+
+class SyncDatabaseIntegrationSpecWithZIO extends SyncDatabaseIntegrationSpec[Task, [A] =>> ZStream[Any, Throwable, A]]

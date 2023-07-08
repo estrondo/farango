@@ -33,7 +33,7 @@ object SyncCollection:
 
   private class Impl(
       val database: SyncDatabase,
-      name: String,
+      val name: String,
       indexes: Seq[IndexDescription],
       options: CollectionCreateOptions
   ) extends SyncCollection:
@@ -51,6 +51,8 @@ object SyncCollection:
 
     override def updateDocument[A, U, R]: PartialUpdateDocument[A, U, R] =
       SyncPartialUpdateDocument(arango)
+
+    override protected def _exists: Try[Boolean] = Try(arango.exists())
 
     override protected def _create(): Try[SyncCollection] =
       for root <- database.root yield
