@@ -39,7 +39,7 @@ given [I[_] <: Iterable[_], F[_]: Extractor](using Factory[Any, I[Any]]): Effect
 
   override def fromJavaStream[A](a: F[stream.Stream[A]]): I[A] =
     val list    = summon[Extractor[F]].get(a).collect(Collectors.toList)
-    val builder = summon[Factory[_, I[_]]].newBuilder
+    val builder = summon[Factory[Any, I[Any]]].newBuilder
     for item <- list.asScala do builder.addOne(item.asInstanceOf[A])
 
     builder.result().asInstanceOf[I[A]]
